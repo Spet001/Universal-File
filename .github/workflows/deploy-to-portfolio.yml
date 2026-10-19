@@ -1,6 +1,6 @@
 name: Deploy Universal File to Portfolio
 
-on:
+'on':
   push:
     branches: [main, master]
   workflow_dispatch:
@@ -9,7 +9,7 @@ permissions:
   contents: read
 
 concurrency:
-  group: 'portfolio-deploy'
+  group: 'portfolio-deploy-universal-file'
   cancel-in-progress: false
 
 jobs:
@@ -42,21 +42,44 @@ jobs:
           token: ${{ secrets.PORTFOLIO_DEPLOY_TOKEN || secrets.GH_PAT || secrets.GITHUB_TOKEN }}
           path: 'portfolio-target'
           ref: 'main'
+          fetch-depth: 0
+
+      - name: Check Deployment Credentials
+        run: |
+          if [ -z "${{ secrets.PORTFOLIO_DEPLOY_TOKEN }}" ] && [ -z "${{ secrets.GH_PAT }}" ]; then
+            echo "::warning::Neither PORTFOLIO_DEPLOY_TOKEN nor GH_PAT is set in repository secrets. Push may fail without write authorization on Spet001/Spet001.github.io."
+          fi
 
       - name: Sync Build Artifacts to Portfolio
         run: |
+          # Clean old artifacts completely to prevent orphan files
+          rm -rf portfolio-target/tools/universal-file
           mkdir -p portfolio-target/tools/universal-file
-          # Remove stale hashed assets to prevent accumulation
-          rm -rf portfolio-target/tools/universal-file/assets
-          # Copy complete build output
-          cp -r dist/* portfolio-target/tools/universal-file/
+          # Copy all build artifacts into destination directory
+          cp -a dist/. portfolio-target/tools/universal-file/
+
           cd portfolio-target
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add tools/universal-file
+          git add -A tools/universal-file
+
           if git diff --staged --quiet; then
             echo "No artifact changes detected. Skipping commit."
           else
-            git commit -m "chore(tools): update universal-file build artifacts [skip ci]"
-            git push origin main
+            git commit -m "chore(tools): update universal-file build artifacts"
+            pushed=0
+            for i in 1 2 3 4 5; do
+              if git push origin main; then
+                pushed=1
+                echo "Successfully pushed artifacts to Spet001/Spet001.github.io on attempt $i."
+                break
+              fi
+              echo "Push failed on attempt $i. Rebasing against latest origin/main..."
+              git pull --rebase origin main
+              sleep 3
+            done
+            if [ "$pushed" -ne 1 ]; then
+              echo "Error: Failed to push artifacts to Spet001/Spet001.github.io after 5 attempts."
+              exit 1
+            fi
           fi
