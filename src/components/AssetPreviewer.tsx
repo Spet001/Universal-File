@@ -501,7 +501,7 @@ export const AssetPreviewer: React.FC<AssetPreviewerProps> = ({
 
     return (
       <div className="p-5 space-y-5 overflow-y-auto h-full">
-        <div className="flex flex-wrap items-center justify-between gap-4 pb-4 border-b border-slate-800">
+        <div className="flex flex-wrap items-center justify-between gap-4 pb-4 border-b border-[#182232]">
           <div>
             <div className="flex items-center gap-2">
               <Palette className="w-4 h-4 text-amber-400" />
@@ -516,7 +516,7 @@ export const AssetPreviewer: React.FC<AssetPreviewerProps> = ({
           <button
             type="button"
             onClick={() => onDownloadSingle(entry)}
-            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium bg-slate-800 hover:bg-slate-700 text-slate-100 rounded border border-slate-700 transition-colors whitespace-nowrap shrink-0"
+            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium bg-slate-800 hover:bg-slate-700 text-slate-100 rounded-none border border-[#182232] transition-colors whitespace-nowrap shrink-0"
           >
             <Download className="w-3.5 h-3.5" />
             <span>Extract Raw .PAL</span>
@@ -524,7 +524,7 @@ export const AssetPreviewer: React.FC<AssetPreviewerProps> = ({
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-          <div className="lg:col-span-8 grid grid-cols-16 gap-1 p-3 bg-[#080B11] border border-slate-800 rounded-lg">
+          <div className="lg:col-span-8 grid grid-cols-16 gap-1 p-3 bg-[#06090f] border border-[#182232] rounded-none-none">
             {Array.from({ length: 256 }).map((_, idx) => {
               const cr = entry.data[idx * 3];
               const cg = entry.data[idx * 3 + 1];
@@ -536,7 +536,7 @@ export const AssetPreviewer: React.FC<AssetPreviewerProps> = ({
                   type="button"
                   onClick={() => setSelectedColorIdx(idx)}
                   style={{ backgroundColor: `rgb(${cr}, ${cg}, ${cb})` }}
-                  className={`aspect-square rounded-sm transition-transform ${
+                  className={`aspect-square rounded-none-[2px] transition-transform ${
                     isSel ? 'ring-2 ring-white scale-110 z-10' : 'hover:scale-105'
                   }`}
                   title={`Index #${idx}: rgb(${cr}, ${cg}, ${cb})`}
@@ -545,10 +545,10 @@ export const AssetPreviewer: React.FC<AssetPreviewerProps> = ({
             })}
           </div>
 
-          <div className="lg:col-span-4 border border-slate-800 rounded-lg p-4 bg-[#0D131F] space-y-4 font-mono text-xs tabular-nums">
+          <div className="lg:col-span-4 border border-[#182232] rounded-none-none p-4 bg-[#090d14] space-y-4 font-mono text-xs tabular-nums">
             <div className="flex items-center gap-3">
               <div
-                className="w-12 h-12 rounded border border-slate-700 shrink-0"
+                className="w-12 h-12 rounded-none border border-[#182232] shrink-0"
                 style={{ backgroundColor: hexColor }}
               />
               <div>
@@ -556,7 +556,7 @@ export const AssetPreviewer: React.FC<AssetPreviewerProps> = ({
                 <div className="text-base font-bold text-slate-100">{hexColor}</div>
               </div>
             </div>
-            <div className="space-y-2 pt-2 border-t border-slate-800">
+            <div className="space-y-2 pt-2 border-t border-[#182232]">
               <div className="flex justify-between">
                 <span className="text-slate-400">Byte Offset</span>
                 <span className="text-slate-200">{toHex(selectedColorIdx * 3, 4)}</span>
@@ -584,7 +584,7 @@ export const AssetPreviewer: React.FC<AssetPreviewerProps> = ({
   if (entry.data.length === 4096 && entry.category === 'texture') {
     return (
       <div className="p-5 space-y-5 overflow-y-auto h-full">
-        <div className="flex flex-wrap items-center justify-between gap-4 pb-4 border-b border-slate-800">
+        <div className="flex flex-wrap items-center justify-between gap-4 pb-4 border-b border-[#182232]">
           <div>
             <div className="flex items-center gap-2">
               <ImageIcon className="w-4 h-4 text-amber-400" />
@@ -600,7 +600,7 @@ export const AssetPreviewer: React.FC<AssetPreviewerProps> = ({
             <button
               type="button"
               onClick={() => setFlatZoom((z) => Math.max(2, z - 1))}
-              className="p-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded border border-slate-700"
+              className="p-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-none border border-[#182232]"
               title="Zoom Out"
             >
               <ZoomOut className="w-3.5 h-3.5" />
@@ -609,7 +609,7 @@ export const AssetPreviewer: React.FC<AssetPreviewerProps> = ({
             <button
               type="button"
               onClick={() => setFlatZoom((z) => Math.min(6, z + 1))}
-              className="p-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded border border-slate-700"
+              className="p-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-none border border-[#182232]"
               title="Zoom In"
             >
               <ZoomIn className="w-3.5 h-3.5" />
@@ -617,7 +617,7 @@ export const AssetPreviewer: React.FC<AssetPreviewerProps> = ({
           </div>
         </div>
 
-        <div className="flex flex-col items-center justify-center p-8 bg-[#080B11] border border-slate-800 rounded-lg">
+        <div className="flex flex-col items-center justify-center p-8 bg-[#06090f] border border-[#182232] rounded-none-none">
           <canvas
             ref={flatCanvasRef}
             width={64}
@@ -627,7 +627,7 @@ export const AssetPreviewer: React.FC<AssetPreviewerProps> = ({
               height: `${64 * flatZoom}px`,
               imageRendering: 'pixelated',
             }}
-            className="border border-slate-700 shadow-lg"
+            className="border border-[#182232] shadow-lg"
           />
           <div className="mt-3 text-xs font-mono text-slate-400 tabular-nums">
             64 × 64 px · 8-bit Indexed Color · {playpalData ? 'PLAYPAL Active' : 'Grayscale Fallback'}
@@ -641,7 +641,7 @@ export const AssetPreviewer: React.FC<AssetPreviewerProps> = ({
   if (mapGeometry) {
     return (
       <div className="p-5 space-y-4 overflow-y-auto h-full">
-        <div className="flex flex-wrap items-center justify-between gap-4 pb-3 border-b border-slate-800">
+        <div className="flex flex-wrap items-center justify-between gap-4 pb-3 border-b border-[#182232]">
           <div>
             <div className="flex items-center gap-2">
               <MapIcon className="w-4 h-4 text-amber-400" />
@@ -658,12 +658,12 @@ export const AssetPreviewer: React.FC<AssetPreviewerProps> = ({
           </div>
         </div>
 
-        <div className="flex items-center justify-center bg-[#080B11] border border-slate-800 rounded-lg p-4">
+        <div className="flex items-center justify-center bg-[#06090f] border border-[#182232] rounded-none-none p-4">
           <canvas
             ref={mapCanvasRef}
             width={680}
             height={380}
-            className="max-w-full h-auto rounded border border-slate-800/80"
+            className="max-w-full h-auto rounded-none border border-[#182232]"
           />
         </div>
       </div>
@@ -674,7 +674,7 @@ export const AssetPreviewer: React.FC<AssetPreviewerProps> = ({
   if (entry.category === 'audio') {
     return (
       <div className="p-5 space-y-5 overflow-y-auto h-full">
-        <div className="flex flex-wrap items-center justify-between gap-4 pb-4 border-b border-slate-800">
+        <div className="flex flex-wrap items-center justify-between gap-4 pb-4 border-b border-[#182232]">
           <div>
             <div className="flex items-center gap-2">
               <Volume2 className="w-4 h-4 text-amber-400" />
@@ -688,7 +688,7 @@ export const AssetPreviewer: React.FC<AssetPreviewerProps> = ({
             <button
               type="button"
               onClick={handlePlayAudio}
-              className="flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-medium bg-amber-500 hover:bg-amber-400 text-slate-950 rounded transition-colors whitespace-nowrap shrink-0"
+              className="flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-medium bg-amber-500 hover:bg-amber-400 text-slate-950 rounded-none transition-colors whitespace-nowrap shrink-0"
             >
               {isPlayingAudio ? <Square className="w-3.5 h-3.5 fill-current" /> : <Play className="w-3.5 h-3.5 fill-current" />}
               <span>{isPlayingAudio ? 'Stop Audio' : 'Play Sound Effect'}</span>
@@ -696,7 +696,7 @@ export const AssetPreviewer: React.FC<AssetPreviewerProps> = ({
             <button
               type="button"
               onClick={() => onDownloadSingle(entry)}
-              className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium bg-slate-800 hover:bg-slate-700 text-slate-200 rounded border border-slate-700 transition-colors whitespace-nowrap shrink-0"
+              className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-none border border-[#182232] transition-colors whitespace-nowrap shrink-0"
             >
               <Download className="w-3.5 h-3.5" />
               <span>Export .WAV</span>
@@ -704,7 +704,7 @@ export const AssetPreviewer: React.FC<AssetPreviewerProps> = ({
           </div>
         </div>
 
-        <div className="p-4 bg-[#080B11] border border-slate-800 rounded-lg">
+        <div className="p-4 bg-[#06090f] border border-[#182232] rounded-none-none">
           <canvas ref={waveCanvasRef} width={720} height={180} className="w-full h-44" />
         </div>
       </div>
@@ -715,14 +715,14 @@ export const AssetPreviewer: React.FC<AssetPreviewerProps> = ({
   if (binkVideo) {
     const { info, timelineText } = binkVideo;
     return (
-      <div className="p-5 space-y-5 overflow-y-auto h-full bg-[#0B0F17]">
-        <div className="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-slate-800">
+      <div className="p-5 space-y-5 overflow-y-auto h-full bg-[#06090f]">
+        <div className="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-[#182232]">
           <div className="flex items-center gap-2">
             <Film className="w-5 h-5 text-amber-400" />
             <div>
               <h3 className="text-sm font-semibold text-slate-100 flex items-center gap-2">
                 <span>{entry.name}</span>
-                <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-amber-500/10 text-amber-400 border border-amber-500/20">
+                <span className="text-[10px] font-mono px-2 py-0.5 rounded-none bg-amber-500/10 text-amber-400 border border-amber-500/20">
                   {info.isBink2 ? 'BINK 2 VIDEO' : 'BINK 1 VIDEO'}
                 </span>
               </h3>
@@ -734,7 +734,7 @@ export const AssetPreviewer: React.FC<AssetPreviewerProps> = ({
           <button
             type="button"
             onClick={() => onDownloadSingle(entry)}
-            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium bg-amber-500 hover:bg-amber-400 text-slate-950 rounded transition-colors whitespace-nowrap shrink-0"
+            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium bg-amber-500 hover:bg-amber-400 text-slate-950 rounded-none transition-colors whitespace-nowrap shrink-0"
           >
             <Download className="w-3.5 h-3.5" />
             <span>Export .BIK Stream</span>
@@ -743,7 +743,7 @@ export const AssetPreviewer: React.FC<AssetPreviewerProps> = ({
 
         {/* Video Metadata Cards */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-          <div className="p-3 bg-[#0F1623] border border-slate-800 rounded-lg">
+          <div className="p-3 bg-[#0c121d] border border-[#182232] rounded-none-none">
             <div className="text-[10px] uppercase font-mono tracking-wider text-slate-500">Resolution</div>
             <div className="text-base font-semibold font-mono text-slate-200 mt-0.5">
               {info.width} × {info.height}
@@ -753,7 +753,7 @@ export const AssetPreviewer: React.FC<AssetPreviewerProps> = ({
             </div>
           </div>
 
-          <div className="p-3 bg-[#0F1623] border border-slate-800 rounded-lg">
+          <div className="p-3 bg-[#0c121d] border border-[#182232] rounded-none-none">
             <div className="text-[10px] uppercase font-mono tracking-wider text-slate-500">Framerate & Speed</div>
             <div className="text-base font-semibold font-mono text-amber-400 mt-0.5">
               {info.fps.toFixed(2)} FPS
@@ -763,7 +763,7 @@ export const AssetPreviewer: React.FC<AssetPreviewerProps> = ({
             </div>
           </div>
 
-          <div className="p-3 bg-[#0F1623] border border-slate-800 rounded-lg">
+          <div className="p-3 bg-[#0c121d] border border-[#182232] rounded-none-none">
             <div className="text-[10px] uppercase font-mono tracking-wider text-slate-500">Duration & Frames</div>
             <div className="text-base font-semibold font-mono text-slate-200 mt-0.5">
               {Math.floor(info.durationSeconds / 60)}m {(info.durationSeconds % 60).toFixed(1)}s
@@ -773,7 +773,7 @@ export const AssetPreviewer: React.FC<AssetPreviewerProps> = ({
             </div>
           </div>
 
-          <div className="p-3 bg-[#0F1623] border border-slate-800 rounded-lg">
+          <div className="p-3 bg-[#0c121d] border border-[#182232] rounded-none-none">
             <div className="text-[10px] uppercase font-mono tracking-wider text-slate-500">Audio Channels</div>
             <div className="text-base font-semibold font-mono text-slate-200 mt-0.5">
               {info.audioTracks?.length || 0} Track(s)
@@ -786,17 +786,17 @@ export const AssetPreviewer: React.FC<AssetPreviewerProps> = ({
 
         {/* Audio Track Breakdown */}
         {info.audioTracks && info.audioTracks.length > 0 && (
-          <div className="p-4 bg-[#080B11] border border-slate-800 rounded-lg space-y-2">
+          <div className="p-4 bg-[#06090f] border border-[#182232] rounded-none-none space-y-2">
             <div className="flex items-center gap-2 text-xs font-semibold text-slate-300">
               <Volume2 className="w-3.5 h-3.5 text-amber-400" />
               <span>Embedded Audio Streams</span>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
               {info.audioTracks.map((tr) => (
-                <div key={tr.trackIndex} className="p-2.5 bg-[#0F1623] border border-slate-800/80 rounded flex items-center justify-between text-xs font-mono">
+                <div key={tr.trackIndex} className="p-2.5 bg-[#0c121d] border border-[#182232] rounded-none flex items-center justify-between text-xs font-mono">
                   <span className="text-slate-300">Track #{tr.trackIndex}</span>
                   <span className="text-slate-400">{tr.sampleRate} Hz</span>
-                  <span className="px-2 py-0.5 rounded bg-slate-800 text-amber-300 text-[11px]">
+                  <span className="px-2 py-0.5 rounded-none bg-slate-800 text-amber-300 text-[11px]">
                     {tr.channels === 2 ? 'Stereo (2ch)' : 'Mono (1ch)'}
                   </span>
                 </div>
@@ -806,7 +806,7 @@ export const AssetPreviewer: React.FC<AssetPreviewerProps> = ({
         )}
 
         {/* Frame Seek Timeline Visualizer */}
-        <div className="p-4 bg-[#080B11] border border-slate-800 rounded-lg space-y-3">
+        <div className="p-4 bg-[#06090f] border border-[#182232] rounded-none-none space-y-3">
           <div className="flex items-center justify-between">
             <div className="text-xs font-semibold text-slate-300 flex items-center gap-2">
               <Film className="w-3.5 h-3.5 text-amber-400" />
@@ -814,15 +814,15 @@ export const AssetPreviewer: React.FC<AssetPreviewerProps> = ({
             </div>
             <div className="flex items-center gap-3 text-[11px] font-mono">
               <span className="flex items-center gap-1.5 text-amber-400">
-                <span className="w-2.5 h-2.5 rounded-sm bg-amber-400 inline-block" /> Keyframe (I-Frame)
+                <span className="w-2.5 h-2.5 rounded-none-[2px] bg-amber-400 inline-block" /> Keyframe (I-Frame)
               </span>
               <span className="flex items-center gap-1.5 text-slate-400">
-                <span className="w-2.5 h-2.5 rounded-sm bg-slate-700 inline-block" /> Delta (P-Frame)
+                <span className="w-2.5 h-2.5 rounded-none-[2px] bg-slate-700 inline-block" /> Delta (P-Frame)
               </span>
             </div>
           </div>
 
-          <div className="h-16 flex items-end gap-0.5 bg-[#0F1623] p-2 rounded border border-slate-800 overflow-x-auto">
+          <div className="h-16 flex items-end gap-0.5 bg-[#0c121d] p-2 rounded-none border border-[#182232] overflow-x-auto">
             {info.frames?.slice(0, 120).map((f) => {
               const maxS = Math.max(1, info.largestFrame || 65536);
               const heightPct = Math.min(100, Math.max(8, Math.round((f.size / maxS) * 100)));
@@ -833,7 +833,7 @@ export const AssetPreviewer: React.FC<AssetPreviewerProps> = ({
                   type="button"
                   onClick={() => setSelectedFrameIdx(f.frameIndex)}
                   title={`Frame #${f.frameIndex}: ${f.size.toLocaleString()} B (${f.isKeyframe ? 'KEYFRAME' : 'Delta'})`}
-                  className={`w-2 min-w-[6px] rounded-t transition-all ${
+                  className={`w-2 min-w-[6px] rounded-none-none transition-all ${
                     f.isKeyframe
                       ? isSelected ? 'bg-amber-300' : 'bg-amber-500 hover:bg-amber-400'
                       : isSelected ? 'bg-slate-300' : 'bg-slate-700 hover:bg-slate-600'
@@ -845,7 +845,7 @@ export const AssetPreviewer: React.FC<AssetPreviewerProps> = ({
           </div>
 
           {info.frames && info.frames[selectedFrameIdx] && (
-            <div className="p-2.5 bg-[#0F1623] rounded border border-slate-800 flex items-center justify-between text-xs font-mono">
+            <div className="p-2.5 bg-[#0c121d] rounded-none border border-[#182232] flex items-center justify-between text-xs font-mono">
               <span className="text-slate-300">
                 Selected Frame #{selectedFrameIdx}
               </span>
@@ -863,9 +863,9 @@ export const AssetPreviewer: React.FC<AssetPreviewerProps> = ({
         </div>
 
         {/* Seek Table Dump */}
-        <div className="p-4 bg-[#080B11] border border-slate-800 rounded-lg space-y-2">
+        <div className="p-4 bg-[#06090f] border border-[#182232] rounded-none-none space-y-2">
           <div className="text-xs font-semibold text-slate-300">Timeline Seek Table Header Report</div>
-          <pre className="p-3 bg-[#0B0F17] text-slate-300 font-mono text-xs rounded border border-slate-800 max-h-56 overflow-y-auto leading-5 select-text">
+          <pre className="p-3 bg-[#06090f] text-slate-300 font-mono text-xs rounded-none border border-[#182232] max-h-56 overflow-y-auto leading-5 select-text">
             {timelineText}
           </pre>
         </div>
@@ -876,14 +876,14 @@ export const AssetPreviewer: React.FC<AssetPreviewerProps> = ({
   // Render PS1 .TIM Texture with CLUT
   if (ps1Tim) {
     return (
-      <div className="p-5 space-y-4 overflow-y-auto h-full bg-[#0B0F17]">
-        <div className="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-slate-800">
+      <div className="p-5 space-y-4 overflow-y-auto h-full bg-[#06090f]">
+        <div className="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-[#182232]">
           <div className="flex items-center gap-2">
             <ImageIcon className="w-5 h-5 text-amber-400" />
             <div>
               <h3 className="text-sm font-semibold text-slate-100 flex items-center gap-2">
                 <span>{entry.name}</span>
-                <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-amber-500/10 text-amber-400 border border-amber-500/20">
+                <span className="text-[10px] font-mono px-2 py-0.5 rounded-none bg-amber-500/10 text-amber-400 border border-amber-500/20">
                   PS1 TIM TEXTURE
                 </span>
               </h3>
@@ -894,13 +894,13 @@ export const AssetPreviewer: React.FC<AssetPreviewerProps> = ({
           </div>
 
           <div className="flex items-center gap-2">
-            <div className="flex items-center gap-1 bg-slate-900 border border-slate-800 rounded p-1">
+            <div className="flex items-center gap-1 bg-slate-900 border border-[#182232] rounded-none p-1">
               {[1, 2, 4, 8].map((z) => (
                 <button
                   key={z}
                   type="button"
                   onClick={() => setTimZoom(z)}
-                  className={`px-2 py-0.5 text-xs font-mono rounded ${
+                  className={`px-2 py-0.5 text-xs font-mono rounded-none ${
                     timZoom === z ? 'bg-amber-500 text-slate-950 font-semibold' : 'text-slate-400 hover:text-white'
                   }`}
                 >
@@ -911,7 +911,7 @@ export const AssetPreviewer: React.FC<AssetPreviewerProps> = ({
             <button
               type="button"
               onClick={() => onDownloadSingle(entry)}
-              className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium bg-slate-800 hover:bg-slate-700 text-slate-200 rounded border border-slate-700 transition-colors whitespace-nowrap shrink-0"
+              className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-none border border-[#182232] transition-colors whitespace-nowrap shrink-0"
             >
               <Download className="w-3.5 h-3.5" />
               <span>Export .TIM</span>
@@ -920,10 +920,10 @@ export const AssetPreviewer: React.FC<AssetPreviewerProps> = ({
         </div>
 
         {/* PS1 Texture Canvas */}
-        <div className="flex items-center justify-center p-8 bg-[#080B11] border border-slate-800 rounded-lg overflow-auto min-h-[220px]">
+        <div className="flex items-center justify-center p-8 bg-[#06090f] border border-[#182232] rounded-none-none overflow-auto min-h-[220px]">
           <canvas
             ref={timCanvasRef}
-            className="border border-slate-800 shadow-2xl image-rendering-pixelated"
+            className="border border-[#182232] shadow-2xl image-rendering-pixelated"
             style={{
               width: ps1Tim.pixelWidth * timZoom,
               height: ps1Tim.imgHeight * timZoom,
@@ -934,7 +934,7 @@ export const AssetPreviewer: React.FC<AssetPreviewerProps> = ({
 
         {/* CLUT Palette Swatches */}
         {ps1Tim.paletteColorsRgba.length > 0 && (
-          <div className="p-4 bg-[#080B11] border border-slate-800 rounded-lg space-y-2">
+          <div className="p-4 bg-[#06090f] border border-[#182232] rounded-none-none space-y-2">
             <div className="flex items-center justify-between">
               <div className="text-xs font-semibold text-slate-300 flex items-center gap-2">
                 <Palette className="w-3.5 h-3.5 text-amber-400" />
@@ -945,12 +945,12 @@ export const AssetPreviewer: React.FC<AssetPreviewerProps> = ({
               </span>
             </div>
 
-            <div className="flex flex-wrap gap-1 p-2 bg-[#0F1623] rounded border border-slate-800 max-h-32 overflow-y-auto">
+            <div className="flex flex-wrap gap-1 p-2 bg-[#0c121d] rounded-none border border-[#182232] max-h-32 overflow-y-auto">
               {ps1Tim.paletteColorsRgba.map((col, idx) => (
                 <div
                   key={idx}
                   title={`Color #${idx}: RGBA(${col[0]}, ${col[1]}, ${col[2]}, ${col[3]})`}
-                  className="w-5 h-5 rounded-sm border border-slate-700 cursor-pointer hover:scale-125 transition-transform"
+                  className="w-5 h-5 rounded-none-[2px] border border-[#182232] cursor-pointer hover:scale-125 transition-transform"
                   style={{ backgroundColor: `rgba(${col[0]}, ${col[1]}, ${col[2]}, ${col[3] / 255})` }}
                 />
               ))}
@@ -964,14 +964,14 @@ export const AssetPreviewer: React.FC<AssetPreviewerProps> = ({
   // Render Nintendo DS 32x32 4bpp Banner Icon
   if (entry.metadata?.isNdsIcon) {
     return (
-      <div className="p-5 space-y-5 overflow-y-auto h-full bg-[#0B0F17]">
-        <div className="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-slate-800">
+      <div className="p-5 space-y-5 overflow-y-auto h-full bg-[#06090f]">
+        <div className="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-[#182232]">
           <div className="flex items-center gap-2">
             <Gamepad2 className="w-5 h-5 text-rose-400" />
             <div>
               <h3 className="text-sm font-semibold text-slate-100 flex items-center gap-2">
                 <span>{entry.name}</span>
-                <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-rose-500/10 text-rose-400 border border-rose-500/20 font-semibold">
+                <span className="text-[10px] font-mono px-2 py-0.5 rounded-none bg-rose-500/10 text-rose-400 border border-rose-500/20 font-semibold">
                   NINTENDO DS BANNER ICON
                 </span>
               </h3>
@@ -982,13 +982,13 @@ export const AssetPreviewer: React.FC<AssetPreviewerProps> = ({
           </div>
 
           <div className="flex items-center gap-2">
-            <div className="flex items-center gap-1 bg-slate-900 border border-slate-800 rounded p-1">
+            <div className="flex items-center gap-1 bg-slate-900 border border-[#182232] rounded-none p-1">
               {[2, 4, 6, 8].map((z) => (
                 <button
                   key={z}
                   type="button"
                   onClick={() => setNdsZoom(z)}
-                  className={`px-2 py-0.5 text-xs font-mono rounded ${
+                  className={`px-2 py-0.5 text-xs font-mono rounded-none ${
                     ndsZoom === z ? 'bg-rose-500 text-white font-semibold' : 'text-slate-400 hover:text-white'
                   }`}
                 >
@@ -999,7 +999,7 @@ export const AssetPreviewer: React.FC<AssetPreviewerProps> = ({
             <button
               type="button"
               onClick={() => onDownloadSingle(entry)}
-              className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium bg-rose-500 hover:bg-rose-400 text-white font-semibold rounded transition-colors whitespace-nowrap shrink-0"
+              className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium bg-rose-500 hover:bg-rose-400 text-white font-semibold rounded-none transition-colors whitespace-nowrap shrink-0"
             >
               <Download className="w-3.5 h-3.5" />
               <span>Export Icon</span>
@@ -1007,10 +1007,10 @@ export const AssetPreviewer: React.FC<AssetPreviewerProps> = ({
           </div>
         </div>
 
-        <div className="flex items-center justify-center p-8 bg-[#080B11] border border-slate-800 rounded-lg min-h-[220px]">
+        <div className="flex items-center justify-center p-8 bg-[#06090f] border border-[#182232] rounded-none-none min-h-[220px]">
           <canvas
             ref={ndsCanvasRef}
-            className="border-2 border-slate-700 shadow-2xl rounded"
+            className="border-2 border-[#182232] shadow-2xl rounded-none"
             style={{
               width: 32 * ndsZoom,
               height: 32 * ndsZoom,
@@ -1025,14 +1025,14 @@ export const AssetPreviewer: React.FC<AssetPreviewerProps> = ({
   // Render id Tech 6 Binary Model (.bmodel) Mesh Geometry
   if (bmodelMesh) {
     return (
-      <div className="p-5 space-y-5 overflow-y-auto h-full bg-[#0B0F17]">
-        <div className="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-slate-800">
+      <div className="p-5 space-y-5 overflow-y-auto h-full bg-[#06090f]">
+        <div className="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-[#182232]">
           <div className="flex items-center gap-2">
             <Box className="w-5 h-5 text-amber-400" />
             <div>
               <h3 className="text-sm font-semibold text-slate-100 flex items-center gap-2">
                 <span>{entry.name}</span>
-                <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-amber-500/10 text-amber-400 border border-amber-500/20">
+                <span className="text-[10px] font-mono px-2 py-0.5 rounded-none bg-amber-500/10 text-amber-400 border border-amber-500/20">
                   id Tech 6 BMODEL
                 </span>
               </h3>
@@ -1045,7 +1045,7 @@ export const AssetPreviewer: React.FC<AssetPreviewerProps> = ({
           <button
             type="button"
             onClick={() => onDownloadSingle(entry)}
-            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium bg-amber-500 hover:bg-amber-400 text-slate-950 rounded transition-colors whitespace-nowrap shrink-0"
+            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium bg-amber-500 hover:bg-amber-400 text-slate-950 rounded-none transition-colors whitespace-nowrap shrink-0"
           >
             <Download className="w-3.5 h-3.5" />
             <span>Export .bmodel</span>
@@ -1053,19 +1053,19 @@ export const AssetPreviewer: React.FC<AssetPreviewerProps> = ({
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-          <div className="p-3 bg-[#0F1623] border border-slate-800 rounded-lg">
+          <div className="p-3 bg-[#0c121d] border border-[#182232] rounded-none-none">
             <div className="text-[10px] uppercase font-mono tracking-wider text-slate-500">Sub-Meshes</div>
             <div className="text-lg font-semibold font-mono text-amber-400 mt-0.5">
               {bmodelMesh.meshes.length}
             </div>
           </div>
-          <div className="p-3 bg-[#0F1623] border border-slate-800 rounded-lg">
+          <div className="p-3 bg-[#0c121d] border border-[#182232] rounded-none-none">
             <div className="text-[10px] uppercase font-mono tracking-wider text-slate-500">Total Vertices</div>
             <div className="text-lg font-semibold font-mono text-slate-200 mt-0.5">
               {bmodelMesh.meshes.reduce((acc, m) => acc + m.vertexCount, 0).toLocaleString()}
             </div>
           </div>
-          <div className="p-3 bg-[#0F1623] border border-slate-800 rounded-lg">
+          <div className="p-3 bg-[#0c121d] border border-[#182232] rounded-none-none">
             <div className="text-[10px] uppercase font-mono tracking-wider text-slate-500">Total Faces</div>
             <div className="text-lg font-semibold font-mono text-slate-200 mt-0.5">
               {bmodelMesh.meshes.reduce((acc, m) => acc + m.faceCount, 0).toLocaleString()}
@@ -1073,28 +1073,28 @@ export const AssetPreviewer: React.FC<AssetPreviewerProps> = ({
           </div>
         </div>
 
-        <div className="p-4 bg-[#080B11] border border-slate-800 rounded-lg space-y-3">
+        <div className="p-4 bg-[#06090f] border border-[#182232] rounded-none-none space-y-3">
           <div className="text-xs font-semibold text-slate-300 flex items-center gap-2">
             <Box className="w-3.5 h-3.5 text-amber-400" />
             <span>Indexed Sub-Meshes & Material Bindings</span>
           </div>
 
           <div className="overflow-x-auto">
-            <table className="w-full text-xs font-mono border-collapse border border-slate-800">
+            <table className="w-full text-xs font-mono border-collapse border border-[#182232]">
               <thead>
-                <tr className="bg-[#0F1623] text-amber-400 border-b border-slate-700 text-left">
-                  <th className="py-2 px-3 border-r border-slate-800">#</th>
-                  <th className="py-2 px-3 border-r border-slate-800">Material Shader Binding</th>
-                  <th className="py-2 px-3 border-r border-slate-800 text-right">Vertices</th>
+                <tr className="bg-[#0c121d] text-amber-400 border-b border-[#182232] text-left">
+                  <th className="py-2 px-3 border-r border-[#182232]">#</th>
+                  <th className="py-2 px-3 border-r border-[#182232]">Material Shader Binding</th>
+                  <th className="py-2 px-3 border-r border-[#182232] text-right">Vertices</th>
                   <th className="py-2 px-3 text-right">Faces</th>
                 </tr>
               </thead>
               <tbody>
                 {bmodelMesh.meshes.map((m, idx) => (
-                  <tr key={idx} className="border-b border-slate-800/80 hover:bg-slate-900/50">
-                    <td className="py-2 px-3 text-slate-500 border-r border-slate-800">{idx}</td>
-                    <td className="py-2 px-3 text-slate-200 font-medium border-r border-slate-800">{m.materialName}</td>
-                    <td className="py-2 px-3 text-right text-slate-300 tabular-nums border-r border-slate-800">{m.vertexCount.toLocaleString()}</td>
+                  <tr key={idx} className="border-b border-[#182232] hover:bg-slate-900/50">
+                    <td className="py-2 px-3 text-slate-500 border-r border-[#182232]">{idx}</td>
+                    <td className="py-2 px-3 text-slate-200 font-medium border-r border-[#182232]">{m.materialName}</td>
+                    <td className="py-2 px-3 text-right text-slate-300 tabular-nums border-r border-[#182232]">{m.vertexCount.toLocaleString()}</td>
                     <td className="py-2 px-3 text-right text-slate-300 tabular-nums">{m.faceCount.toLocaleString()}</td>
                   </tr>
                 ))}
@@ -1110,14 +1110,14 @@ export const AssetPreviewer: React.FC<AssetPreviewerProps> = ({
   if (xexInfo) {
     const extra = (xexInfo.extraInfo || {}) as Record<string, any>;
     return (
-      <div className="p-5 space-y-5 overflow-y-auto h-full bg-[#0B0F17]">
-        <div className="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-slate-800">
+      <div className="p-5 space-y-5 overflow-y-auto h-full bg-[#06090f]">
+        <div className="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-[#182232]">
           <div className="flex items-center gap-2">
             <Gamepad2 className="w-5 h-5 text-emerald-400" />
             <div>
               <h3 className="text-sm font-semibold text-slate-100 flex items-center gap-2">
                 <span>{entry.name}</span>
-                <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-semibold">
+                <span className="text-[10px] font-mono px-2 py-0.5 rounded-none bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-semibold">
                   XBOX 360 XEX2
                 </span>
               </h3>
@@ -1130,7 +1130,7 @@ export const AssetPreviewer: React.FC<AssetPreviewerProps> = ({
           <button
             type="button"
             onClick={() => onDownloadSingle(entry)}
-            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-semibold rounded transition-colors whitespace-nowrap shrink-0"
+            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-semibold rounded-none transition-colors whitespace-nowrap shrink-0"
           >
             <Download className="w-3.5 h-3.5" />
             <span>Export .XEX</span>
@@ -1138,25 +1138,25 @@ export const AssetPreviewer: React.FC<AssetPreviewerProps> = ({
         </div>
 
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-          <div className="p-3 bg-[#0F1623] border border-slate-800 rounded-lg">
+          <div className="p-3 bg-[#0c121d] border border-[#182232] rounded-none-none">
             <div className="text-[10px] uppercase font-mono tracking-wider text-slate-500">Title ID</div>
             <div className="text-base font-semibold font-mono text-emerald-400 mt-0.5">
               0x{extra.titleId || '415608C3'}
             </div>
           </div>
-          <div className="p-3 bg-[#0F1623] border border-slate-800 rounded-lg">
+          <div className="p-3 bg-[#0c121d] border border-[#182232] rounded-none-none">
             <div className="text-[10px] uppercase font-mono tracking-wider text-slate-500">Original PE</div>
             <div className="text-base font-semibold font-mono text-slate-200 mt-0.5 truncate">
               {extra.originalPeName || 'default.exe'}
             </div>
           </div>
-          <div className="p-3 bg-[#0F1623] border border-slate-800 rounded-lg">
+          <div className="p-3 bg-[#0c121d] border border-[#182232] rounded-none-none">
             <div className="text-[10px] uppercase font-mono tracking-wider text-slate-500">Entry Point</div>
             <div className="text-base font-semibold font-mono text-slate-200 mt-0.5">
               {extra.entryPoint || '0x82000000'}
             </div>
           </div>
-          <div className="p-3 bg-[#0F1623] border border-slate-800 rounded-lg">
+          <div className="p-3 bg-[#0c121d] border border-[#182232] rounded-none-none">
             <div className="text-[10px] uppercase font-mono tracking-wider text-slate-500">Base Address</div>
             <div className="text-base font-semibold font-mono text-slate-200 mt-0.5">
               {extra.baseAddress || '0x82000000'}
@@ -1165,7 +1165,7 @@ export const AssetPreviewer: React.FC<AssetPreviewerProps> = ({
         </div>
 
         {extra.staticLibraries && extra.staticLibraries.length > 0 && (
-          <div className="p-4 bg-[#080B11] border border-slate-800 rounded-lg space-y-2">
+          <div className="p-4 bg-[#06090f] border border-[#182232] rounded-none-none space-y-2">
             <div className="text-xs font-semibold text-slate-300 flex items-center gap-2">
               <Layers className="w-3.5 h-3.5 text-emerald-400" />
               <span>Linked Xbox 360 SDK Static Libraries ({extra.staticLibraries.length})</span>
@@ -1174,7 +1174,7 @@ export const AssetPreviewer: React.FC<AssetPreviewerProps> = ({
               {extra.staticLibraries.map((lib: string, i: number) => (
                 <span
                   key={i}
-                  className="px-2.5 py-1 text-xs font-mono rounded bg-slate-900 border border-slate-800 text-slate-300 flex items-center gap-1.5"
+                  className="px-2.5 py-1 text-xs font-mono rounded-none bg-slate-900 border border-[#182232] text-slate-300 flex items-center gap-1.5"
                 >
                   <ShieldCheck className="w-3 h-3 text-emerald-400" />
                   <span>{lib}</span>
@@ -1184,27 +1184,27 @@ export const AssetPreviewer: React.FC<AssetPreviewerProps> = ({
           </div>
         )}
 
-        <div className="p-4 bg-[#080B11] border border-slate-800 rounded-lg space-y-3">
+        <div className="p-4 bg-[#06090f] border border-[#182232] rounded-none-none space-y-3">
           <div className="text-xs font-semibold text-slate-300 flex items-center gap-2">
             <Layers className="w-3.5 h-3.5 text-emerald-400" />
             <span>Virtual Executable Payload & PE Sections ({xexInfo.entries.length} Components)</span>
           </div>
           <div className="overflow-x-auto">
-            <table className="w-full text-xs font-mono border-collapse border border-slate-800">
+            <table className="w-full text-xs font-mono border-collapse border border-[#182232]">
               <thead>
-                <tr className="bg-[#0F1623] text-emerald-400 border-b border-slate-700 text-left">
-                  <th className="py-2 px-3 border-r border-slate-800">Section / Resource</th>
-                  <th className="py-2 px-3 border-r border-slate-800">Virtual Size</th>
-                  <th className="py-2 px-3 border-r border-slate-800">Offset</th>
+                <tr className="bg-[#0c121d] text-emerald-400 border-b border-[#182232] text-left">
+                  <th className="py-2 px-3 border-r border-[#182232]">Section / Resource</th>
+                  <th className="py-2 px-3 border-r border-[#182232]">Virtual Size</th>
+                  <th className="py-2 px-3 border-r border-[#182232]">Offset</th>
                   <th className="py-2 px-3 text-right">Method</th>
                 </tr>
               </thead>
               <tbody>
                 {xexInfo.entries.map((sect, idx) => (
-                  <tr key={idx} className="border-b border-slate-800/80 hover:bg-slate-900/50">
-                    <td className="py-2 px-3 text-slate-200 font-medium border-r border-slate-800">{sect.name}</td>
-                    <td className="py-2 px-3 text-slate-300 border-r border-slate-800">{formatBytes(sect.uncompressedSize)}</td>
-                    <td className="py-2 px-3 text-slate-400 border-r border-slate-800">0x{toHex(sect.offset, 6)}</td>
+                  <tr key={idx} className="border-b border-[#182232] hover:bg-slate-900/50">
+                    <td className="py-2 px-3 text-slate-200 font-medium border-r border-[#182232]">{sect.name}</td>
+                    <td className="py-2 px-3 text-slate-300 border-r border-[#182232]">{formatBytes(sect.uncompressedSize)}</td>
+                    <td className="py-2 px-3 text-slate-400 border-r border-[#182232]">0x{toHex(sect.offset, 6)}</td>
                     <td className="py-2 px-3 text-right text-emerald-400/90">{sect.compressionMethod}</td>
                   </tr>
                 ))}
@@ -1213,14 +1213,14 @@ export const AssetPreviewer: React.FC<AssetPreviewerProps> = ({
           </div>
         </div>
 
-        <div className="p-4 bg-[#080B11] border border-slate-800 rounded-lg space-y-3">
+        <div className="p-4 bg-[#06090f] border border-[#182232] rounded-none-none space-y-3">
           <div className="text-xs font-semibold text-slate-300 flex items-center gap-2">
             <Terminal className="w-3.5 h-3.5 text-emerald-400" />
             <span>XEX2 Descriptors & Security Certificate</span>
           </div>
           <div className="space-y-1.5 font-mono text-xs">
             {xexInfo.headerFields.map((hf, i) => (
-              <div key={i} className="flex flex-wrap items-baseline justify-between p-2 rounded bg-[#0F1623] border border-slate-800/80">
+              <div key={i} className="flex flex-wrap items-baseline justify-between p-2 rounded-none bg-[#0c121d] border border-[#182232]">
                 <span className="text-slate-400 font-medium">{hf.label} ({hf.offset})</span>
                 <span className="text-emerald-300 font-semibold">{hf.value}</span>
               </div>
@@ -1234,14 +1234,14 @@ export const AssetPreviewer: React.FC<AssetPreviewerProps> = ({
   // Render Xbox GDK MicrosoftGame.config Inspector
   if (gdkConfigInfo) {
     return (
-      <div className="p-5 space-y-5 overflow-y-auto h-full bg-[#0B0F17]">
-        <div className="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-slate-800">
+      <div className="p-5 space-y-5 overflow-y-auto h-full bg-[#06090f]">
+        <div className="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-[#182232]">
           <div className="flex items-center gap-2">
             <Package className="w-5 h-5 text-cyan-400" />
             <div>
               <h3 className="text-sm font-semibold text-slate-100 flex items-center gap-2">
                 <span>MicrosoftGame.config</span>
-                <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 font-semibold">
+                <span className="text-[10px] font-mono px-2 py-0.5 rounded-none bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 font-semibold">
                   XBOX GDK CONFIG
                 </span>
               </h3>
@@ -1254,7 +1254,7 @@ export const AssetPreviewer: React.FC<AssetPreviewerProps> = ({
           <button
             type="button"
             onClick={() => onDownloadSingle(entry)}
-            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-semibold rounded transition-colors whitespace-nowrap shrink-0"
+            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-semibold rounded-none transition-colors whitespace-nowrap shrink-0"
           >
             <Download className="w-3.5 h-3.5" />
             <span>Export Config</span>
@@ -1262,19 +1262,19 @@ export const AssetPreviewer: React.FC<AssetPreviewerProps> = ({
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-          <div className="p-3 bg-[#0F1623] border border-slate-800 rounded-lg">
+          <div className="p-3 bg-[#0c121d] border border-[#182232] rounded-none-none">
             <div className="text-[10px] uppercase font-mono tracking-wider text-slate-500">Game Title</div>
             <div className="text-base font-semibold font-mono text-cyan-400 mt-0.5">
               {gdkConfigInfo.displayName || 'Call of Duty: Modern Warfare'}
             </div>
           </div>
-          <div className="p-3 bg-[#0F1623] border border-slate-800 rounded-lg">
+          <div className="p-3 bg-[#0c121d] border border-[#182232] rounded-none-none">
             <div className="text-[10px] uppercase font-mono tracking-wider text-slate-500">Xbox Title ID</div>
             <div className="text-base font-semibold font-mono text-slate-200 mt-0.5">
               0x{gdkConfigInfo.titleId?.toUpperCase() || '415608E4'}
             </div>
           </div>
-          <div className="p-3 bg-[#0F1623] border border-slate-800 rounded-lg">
+          <div className="p-3 bg-[#0c121d] border border-[#182232] rounded-none-none">
             <div className="text-[10px] uppercase font-mono tracking-wider text-slate-500">Target Generation</div>
             <div className="text-base font-semibold font-mono text-emerald-400 mt-0.5">
               {gdkConfigInfo.targetPlatform || 'Xbox Series X|S (Scarlett)'}
@@ -1282,14 +1282,14 @@ export const AssetPreviewer: React.FC<AssetPreviewerProps> = ({
           </div>
         </div>
 
-        <div className="p-4 bg-[#080B11] border border-slate-800 rounded-lg space-y-3">
+        <div className="p-4 bg-[#06090f] border border-[#182232] rounded-none-none space-y-3">
           <div className="text-xs font-semibold text-slate-300 flex items-center gap-2">
             <Layers className="w-3.5 h-3.5 text-cyan-400" />
             <span>Registered Executables</span>
           </div>
           <div className="flex flex-wrap gap-2">
             {gdkConfigInfo.executables.map((exe, i) => (
-              <span key={i} className="px-2.5 py-1 text-xs font-mono rounded bg-slate-900 border border-slate-800 text-slate-200 flex items-center gap-1.5">
+              <span key={i} className="px-2.5 py-1 text-xs font-mono rounded-none bg-slate-900 border border-[#182232] text-slate-200 flex items-center gap-1.5">
                 <Terminal className="w-3 h-3 text-cyan-400" />
                 <span>{exe}</span>
               </span>
@@ -1297,9 +1297,9 @@ export const AssetPreviewer: React.FC<AssetPreviewerProps> = ({
           </div>
         </div>
 
-        <div className="p-4 bg-[#080B11] border border-slate-800 rounded-lg space-y-2">
+        <div className="p-4 bg-[#06090f] border border-[#182232] rounded-none-none space-y-2">
           <div className="text-xs font-semibold text-slate-300">Raw MicrosoftGame.config XML</div>
-          <pre className="p-3 bg-[#0F1623] text-slate-300 font-mono text-xs rounded border border-slate-800 max-h-56 overflow-y-auto leading-5 select-text">
+          <pre className="p-3 bg-[#0c121d] text-slate-300 font-mono text-xs rounded-none border border-[#182232] max-h-56 overflow-y-auto leading-5 select-text">
             {new TextDecoder('utf-8', { fatal: false }).decode(entry.data)}
           </pre>
         </div>
@@ -1310,14 +1310,14 @@ export const AssetPreviewer: React.FC<AssetPreviewerProps> = ({
   // Render UWP / AppX Package Manifest Inspector
   if (appxManifestInfo) {
     return (
-      <div className="p-5 space-y-5 overflow-y-auto h-full bg-[#0B0F17]">
-        <div className="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-slate-800">
+      <div className="p-5 space-y-5 overflow-y-auto h-full bg-[#06090f]">
+        <div className="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-[#182232]">
           <div className="flex items-center gap-2">
             <Package className="w-5 h-5 text-indigo-400" />
             <div>
               <h3 className="text-sm font-semibold text-slate-100 flex items-center gap-2">
                 <span>AppxManifest.xml</span>
-                <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 font-semibold">
+                <span className="text-[10px] font-mono px-2 py-0.5 rounded-none bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 font-semibold">
                   APPX MANIFEST
                 </span>
               </h3>
@@ -1330,7 +1330,7 @@ export const AssetPreviewer: React.FC<AssetPreviewerProps> = ({
           <button
             type="button"
             onClick={() => onDownloadSingle(entry)}
-            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium bg-indigo-500 hover:bg-indigo-400 text-slate-950 font-semibold rounded transition-colors whitespace-nowrap shrink-0"
+            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium bg-indigo-500 hover:bg-indigo-400 text-slate-950 font-semibold rounded-none transition-colors whitespace-nowrap shrink-0"
           >
             <Download className="w-3.5 h-3.5" />
             <span>Export Manifest</span>
@@ -1338,19 +1338,19 @@ export const AssetPreviewer: React.FC<AssetPreviewerProps> = ({
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-          <div className="p-3 bg-[#0F1623] border border-slate-800 rounded-lg">
+          <div className="p-3 bg-[#0c121d] border border-[#182232] rounded-none-none">
             <div className="text-[10px] uppercase font-mono tracking-wider text-slate-500">Package Name</div>
             <div className="text-sm font-semibold font-mono text-indigo-400 mt-0.5 truncate">
               {appxManifestInfo.packageName}
             </div>
           </div>
-          <div className="p-3 bg-[#0F1623] border border-slate-800 rounded-lg">
+          <div className="p-3 bg-[#0c121d] border border-[#182232] rounded-none-none">
             <div className="text-[10px] uppercase font-mono tracking-wider text-slate-500">Device Family</div>
             <div className="text-sm font-semibold font-mono text-slate-200 mt-0.5">
               {appxManifestInfo.targetDeviceFamily || 'Windows.Xbox'}
             </div>
           </div>
-          <div className="p-3 bg-[#0F1623] border border-slate-800 rounded-lg">
+          <div className="p-3 bg-[#0c121d] border border-[#182232] rounded-none-none">
             <div className="text-[10px] uppercase font-mono tracking-wider text-slate-500">Entry Binary</div>
             <div className="text-sm font-semibold font-mono text-emerald-400 mt-0.5">
               {appxManifestInfo.executable || 'App.exe'}
@@ -1358,9 +1358,9 @@ export const AssetPreviewer: React.FC<AssetPreviewerProps> = ({
           </div>
         </div>
 
-        <div className="p-4 bg-[#080B11] border border-slate-800 rounded-lg space-y-2">
+        <div className="p-4 bg-[#06090f] border border-[#182232] rounded-none-none space-y-2">
           <div className="text-xs font-semibold text-slate-300">Raw AppxManifest.xml</div>
-          <pre className="p-3 bg-[#0F1623] text-slate-300 font-mono text-xs rounded border border-slate-800 max-h-56 overflow-y-auto leading-5 select-text">
+          <pre className="p-3 bg-[#0c121d] text-slate-300 font-mono text-xs rounded-none border border-[#182232] max-h-56 overflow-y-auto leading-5 select-text">
             {new TextDecoder('utf-8', { fatal: false }).decode(entry.data)}
           </pre>
         </div>
@@ -1372,7 +1372,7 @@ export const AssetPreviewer: React.FC<AssetPreviewerProps> = ({
   if (imageBlobUrl) {
     return (
       <div className="p-5 space-y-4 overflow-y-auto h-full">
-        <div className="flex items-center justify-between pb-3 border-b border-slate-800">
+        <div className="flex items-center justify-between pb-3 border-b border-[#182232]">
           <div className="flex items-center gap-2">
             <ImageIcon className="w-4 h-4 text-amber-400" />
             <h3 className="text-sm font-semibold text-slate-100">Texture Asset Preview ({entry.name})</h3>
@@ -1380,18 +1380,18 @@ export const AssetPreviewer: React.FC<AssetPreviewerProps> = ({
           <button
             type="button"
             onClick={() => onDownloadSingle(entry)}
-            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium bg-slate-800 hover:bg-slate-700 text-slate-200 rounded border border-slate-700 transition-colors whitespace-nowrap shrink-0"
+            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-none border border-[#182232] transition-colors whitespace-nowrap shrink-0"
           >
             <Download className="w-3.5 h-3.5" />
             <span>Extract Image</span>
           </button>
         </div>
-        <div className="flex items-center justify-center p-6 bg-[#080B11] border border-slate-800 rounded-lg">
+        <div className="flex items-center justify-center p-6 bg-[#06090f] border border-[#182232] rounded-none-none">
           <img
             src={imageBlobUrl}
             alt={entry.name}
             referrerPolicy="no-referrer"
-            className="max-h-96 object-contain border border-slate-800"
+            className="max-h-96 object-contain border border-[#182232]"
           />
         </div>
       </div>
@@ -1401,8 +1401,8 @@ export const AssetPreviewer: React.FC<AssetPreviewerProps> = ({
   // Render StringTable (.csv) Interactive Spreadsheet Grid
   if (parsedCsvRows && csvViewMode === 'grid') {
     return (
-      <div className="flex flex-col h-full bg-[#0B0F17]">
-        <div className="flex flex-wrap items-center justify-between gap-3 px-4 py-2.5 border-b border-slate-800 bg-[#0F1623]">
+      <div className="flex flex-col h-full bg-[#06090f]">
+        <div className="flex flex-wrap items-center justify-between gap-3 px-4 py-2.5 border-b border-[#182232] bg-[#0c121d]">
           <div className="flex items-center gap-2 text-xs text-slate-300">
             <Table className="w-4 h-4 text-amber-400 shrink-0" />
             <span className="font-mono font-medium">{entry.path}</span>
@@ -1416,14 +1416,14 @@ export const AssetPreviewer: React.FC<AssetPreviewerProps> = ({
             <button
               type="button"
               onClick={() => setCsvViewMode('raw')}
-              className="px-2.5 py-1 text-xs font-medium bg-slate-800 hover:bg-slate-700 text-slate-200 rounded border border-slate-700 transition-colors whitespace-nowrap shrink-0"
+              className="px-2.5 py-1 text-xs font-medium bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-none border border-[#182232] transition-colors whitespace-nowrap shrink-0"
             >
               View Raw CSV Text
             </button>
             <button
               type="button"
               onClick={() => onDownloadSingle(entry)}
-              className="flex items-center gap-1.5 px-3 py-1 text-xs font-medium bg-amber-500 hover:bg-amber-400 text-slate-950 rounded transition-colors whitespace-nowrap shrink-0"
+              className="flex items-center gap-1.5 px-3 py-1 text-xs font-medium bg-amber-500 hover:bg-amber-400 text-slate-950 rounded-none transition-colors whitespace-nowrap shrink-0"
             >
               <Download className="w-3.5 h-3.5" />
               <span>Export .CSV</span>
@@ -1432,22 +1432,22 @@ export const AssetPreviewer: React.FC<AssetPreviewerProps> = ({
         </div>
 
         <div className="flex-1 overflow-auto p-4">
-          <table className="w-full border-collapse text-xs font-mono tabular-nums border border-slate-800">
+          <table className="w-full border-collapse text-xs font-mono tabular-nums border border-[#182232]">
             <tbody>
               {parsedCsvRows.map((row, rIdx) => (
                 <tr
                   key={rIdx}
                   className={
                     rIdx === 0
-                      ? 'bg-[#0F1623] text-amber-300 font-semibold border-b border-slate-700'
-                      : 'border-b border-slate-800/70 hover:bg-slate-900/60 text-slate-200'
+                      ? 'bg-[#0c121d] text-amber-300 font-semibold border-b border-[#182232]'
+                      : 'border-b border-[#182232]/70 hover:bg-slate-900/60 text-slate-200'
                   }
                 >
-                  <td className="py-1.5 px-2.5 text-slate-500 border-r border-slate-800 w-12 text-right select-none">
+                  <td className="py-1.5 px-2.5 text-slate-500 border-r border-[#182232] w-12 text-right select-none">
                     {rIdx}
                   </td>
                   {row.map((cell, cIdx) => (
-                    <td key={cIdx} className="py-1.5 px-3 border-r border-slate-800/60 whitespace-nowrap">
+                    <td key={cIdx} className="py-1.5 px-3 border-r border-[#182232]/60 whitespace-nowrap">
                       {cell}
                     </td>
                   ))}
@@ -1462,7 +1462,7 @@ export const AssetPreviewer: React.FC<AssetPreviewerProps> = ({
 
   // Render Compiled T6/T5 GSC Bytecode Disassembly OR Editable Script / Rawfile / Localize Editor
   return (
-    <div className="flex flex-col h-full bg-[#0B0F17]">
+    <div className="flex flex-col h-full bg-[#06090f]">
       <input
         ref={replaceFileInputRef}
         type="file"
@@ -1475,7 +1475,7 @@ export const AssetPreviewer: React.FC<AssetPreviewerProps> = ({
         }}
       />
 
-      <div className="flex flex-wrap items-center justify-between gap-3 px-4 py-2.5 border-b border-slate-800 bg-[#0F1623]">
+      <div className="flex flex-wrap items-center justify-between gap-3 px-4 py-2.5 border-b border-[#182232] bg-[#0c121d]">
         <div className="flex items-center gap-2 text-xs text-slate-300">
           {isCompiledT6Gsc ? (
             <Cpu className="w-4 h-4 text-amber-400 shrink-0" />
@@ -1494,7 +1494,7 @@ export const AssetPreviewer: React.FC<AssetPreviewerProps> = ({
             <button
               type="button"
               onClick={() => setCsvViewMode('grid')}
-              className="px-2.5 py-1 text-xs font-medium bg-slate-800 hover:bg-slate-700 text-slate-200 rounded border border-slate-700 transition-colors whitespace-nowrap shrink-0"
+              className="px-2.5 py-1 text-xs font-medium bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-none border border-[#182232] transition-colors whitespace-nowrap shrink-0"
             >
               Grid View
             </button>
@@ -1505,7 +1505,7 @@ export const AssetPreviewer: React.FC<AssetPreviewerProps> = ({
               <button
                 type="button"
                 onClick={() => replaceFileInputRef.current?.click()}
-                className="flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium bg-slate-800 hover:bg-slate-700 text-amber-300 rounded border border-slate-700 transition-colors whitespace-nowrap shrink-0"
+                className="flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium bg-slate-800 hover:bg-slate-700 text-amber-300 rounded-none border border-[#182232] transition-colors whitespace-nowrap shrink-0"
                 title="Replace this asset in the FastFile zone with an external binary/script file"
               >
                 <Upload className="w-3.5 h-3.5" />
@@ -1520,7 +1520,7 @@ export const AssetPreviewer: React.FC<AssetPreviewerProps> = ({
                 setEditedText(decodedString);
                 setIsDirty(false);
               }}
-              className="flex items-center gap-1 px-2.5 py-1 text-xs text-slate-300 hover:text-white bg-slate-800 rounded border border-slate-700 transition-colors whitespace-nowrap shrink-0"
+              className="flex items-center gap-1 px-2.5 py-1 text-xs text-slate-300 hover:text-white bg-slate-800 rounded-none border border-[#182232] transition-colors whitespace-nowrap shrink-0"
             >
               <RotateCcw className="w-3.5 h-3.5" />
               <span>Revert</span>
@@ -1532,12 +1532,12 @@ export const AssetPreviewer: React.FC<AssetPreviewerProps> = ({
               type="button"
               disabled={!isDirty}
               onClick={handleSaveTextChanges}
-              className={`flex items-center gap-1.5 px-3 py-1 text-xs font-medium rounded transition-colors whitespace-nowrap shrink-0 ${
+              className={`flex items-center gap-1.5 px-3 py-1 text-xs font-medium rounded-none transition-colors whitespace-nowrap shrink-0 ${
                 savedNotice
                   ? 'bg-emerald-600 text-white'
                   : isDirty
                   ? 'bg-amber-500 hover:bg-amber-400 text-slate-950'
-                  : 'bg-slate-800/60 text-slate-500 border border-slate-800 cursor-not-allowed'
+                  : 'bg-slate-800/60 text-slate-500 border border-[#182232] cursor-not-allowed'
               }`}
             >
               {savedNotice ? <Check className="w-3.5 h-3.5" /> : <Save className="w-3.5 h-3.5" />}
@@ -1558,7 +1558,7 @@ export const AssetPreviewer: React.FC<AssetPreviewerProps> = ({
             }
           }}
           spellCheck={false}
-          className="w-full h-full p-4 bg-[#0B0F17] text-slate-200 font-mono text-xs leading-6 focus:outline-none resize-none selection:bg-amber-500/30"
+          className="w-full h-full p-4 bg-[#06090f] text-slate-200 font-mono text-xs leading-6 focus:outline-none resize-none selection:bg-amber-500/30"
         />
       </div>
     </div>

@@ -29,33 +29,35 @@ export const ArchiveBuilderModal: React.FC<ArchiveBuilderModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 p-4">
-      <div className="w-full max-w-xl bg-[#0F1623] border border-slate-800 rounded-lg shadow-2xl overflow-hidden">
-        <div className="flex items-center justify-between px-5 py-3.5 border-b border-slate-800">
-          <div className="flex items-center gap-2">
-            <PackageCheck className="w-4 h-4 text-amber-400" />
-            <h3 className="text-sm font-semibold text-slate-100">Inject Asset into Current Archive</h3>
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4 font-mono select-none">
+      <div className="w-full max-w-xl bg-[#090d14] border border-[#182232] shadow-2xl overflow-hidden">
+        <div className="h-[28px] flex items-center justify-between px-3 bg-[#0c121d] border-b border-[#182232]">
+          <div className="flex items-center gap-1.5">
+            <PackageCheck className="w-3.5 h-3.5 text-[#38bdf8]" />
+            <h3 className="text-xs font-semibold text-slate-100 uppercase tracking-wider">
+              Inject Asset into Container
+            </h3>
           </div>
           <button
             type="button"
             onClick={onClose}
-            className="text-slate-400 hover:text-slate-200 p-1 rounded transition-colors"
+            className="text-slate-400 hover:text-white p-0.5"
           >
-            <X className="w-4 h-4" />
+            <X className="w-3.5 h-3.5" />
           </button>
         </div>
 
-        <div className="p-5 space-y-5">
+        <div className="p-4 space-y-4 text-xs">
           {/* Option 1: Upload raw files from disk */}
-          <div className="p-4 bg-[#0B0F17] border border-dashed border-slate-700 rounded-lg flex items-center justify-between gap-4">
+          <div className="p-3 bg-[#06090f] border border-[#182232] flex items-center justify-between gap-3">
             <div>
-              <div className="text-xs font-semibold text-slate-200">Import External File(s) from Disk</div>
-              <div className="text-xs text-slate-400 mt-0.5">
-                Inject .gsc, .cfg, .wav, .png, .dds, or raw lump binaries directly into the virtual directory.
+              <div className="text-[11px] font-semibold text-slate-200">Import External File(s) from Disk</div>
+              <div className="text-[10px] text-[#64748b] mt-0.5">
+                Inject .gsc, .cfg, .wav, .png, .dds, or lump binaries directly.
               </div>
             </div>
-            <label className="cursor-pointer flex items-center gap-1.5 px-3 py-2 text-xs font-medium bg-slate-800 hover:bg-slate-700 text-slate-100 rounded border border-slate-700 transition-colors whitespace-nowrap shrink-0">
-              <Upload className="w-3.5 h-3.5" />
+            <label className="cursor-pointer flex items-center gap-1.5 h-[24px] px-2.5 text-[10px] bg-[#111a29] hover:border-[#38bdf8] text-slate-200 border border-[#26354d] whitespace-nowrap shrink-0">
+              <Upload className="w-3 h-3 text-[#38bdf8]" />
               <span>Choose Files</span>
               <input
                 type="file"
@@ -74,20 +76,20 @@ export const ArchiveBuilderModal: React.FC<ArchiveBuilderModalProps> = ({
           {/* Option 2: Create new script/lump in-place */}
           <form onSubmit={handleSubmit} className="space-y-3">
             <div>
-              <label className="block text-xs font-medium text-slate-300 mb-1">
-                Virtual Path / Lump Name (8 chars max for WAD, 55 chars for PAK)
+              <label className="block text-[10px] font-medium text-slate-400 mb-1">
+                Virtual Path / Lump Name (e.g. maps/mp/patch.gsc)
               </label>
               <input
                 type="text"
                 value={entryPath}
                 onChange={(e) => setEntryPath(e.target.value)}
                 placeholder="maps/mp/custom_script.gsc"
-                className="w-full px-3 py-1.5 text-xs font-mono bg-[#0B0F17] border border-slate-700 rounded text-slate-100 focus:outline-none focus:border-amber-500"
+                className="w-full h-[24px] px-2 text-[11px] bg-[#06090f] border border-[#182232] text-slate-100 focus:outline-none focus:border-[#38bdf8]"
               />
             </div>
 
             <div>
-              <label className="block text-xs font-medium text-slate-300 mb-1">
+              <label className="block text-[10px] font-medium text-slate-400 mb-1">
                 Asset Payload (ASCII / UTF-8 Script or Config)
               </label>
               <textarea
@@ -95,23 +97,23 @@ export const ArchiveBuilderModal: React.FC<ArchiveBuilderModalProps> = ({
                 value={entryContent}
                 onChange={(e) => setEntryContent(e.target.value)}
                 spellCheck={false}
-                className="w-full p-3 text-xs font-mono bg-[#0B0F17] border border-slate-700 rounded text-slate-200 focus:outline-none focus:border-amber-500"
+                className="w-full p-2 text-xs bg-[#06090f] border border-[#182232] text-slate-200 focus:outline-none focus:border-[#38bdf8] font-mono leading-relaxed"
               />
             </div>
 
-            <div className="flex items-center justify-end gap-2 pt-2">
+            <div className="flex items-center justify-end gap-2 pt-1 border-t border-[#182232]">
               <button
                 type="button"
                 onClick={onClose}
-                className="px-3.5 py-1.5 text-xs font-medium text-slate-300 hover:text-white bg-slate-800 rounded transition-colors whitespace-nowrap shrink-0"
+                className="h-[24px] px-3 text-[10px] text-slate-400 hover:text-white border border-[#182232] bg-[#06090f]"
               >
                 Cancel
               </button>
               <button
                 type="submit"
-                className="flex items-center gap-1.5 px-4 py-1.5 text-xs font-medium bg-amber-500 hover:bg-amber-400 text-slate-950 rounded transition-colors whitespace-nowrap shrink-0"
+                className="h-[24px] flex items-center gap-1.5 px-3 text-[10px] font-semibold bg-[#111a29] hover:bg-[#38bdf8]/20 text-[#38bdf8] border border-[#38bdf8]"
               >
-                <Plus className="w-3.5 h-3.5" />
+                <Plus className="w-3 h-3" />
                 <span>Inject into Archive</span>
               </button>
             </div>

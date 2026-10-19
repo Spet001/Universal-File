@@ -2,28 +2,54 @@
 
 @layer base {
   :root {
-    --font-display: 'Outfit', -apple-system, BlinkMacSystemFont, sans-serif;
-    --font-sans: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
-    --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace;
+    --bg-canvas: #06090f;
+    --bg-panel: #090d14;
+    --bg-header: #0c121d;
+    --bg-active: #111a29;
+    --text-primary: #cbd5e1;
+    --text-secondary: #94a3b8;
+    --text-muted: #64748b;
+    --accent-cyan: #38bdf8;
+    --accent-amber: #f59e0b;
+    --border-hairline: #182232;
+    --font-mono: 'JetBrains Mono', 'Fira Code', ui-monospace, SFMono-Regular, monospace;
   }
 
   html, body, #root {
     height: 100%;
     max-height: 100%;
     overflow: hidden;
+    background-color: #06090f;
+    color: #cbd5e1;
+    user-select: none;
+    -webkit-user-select: none;
+    font-family: var(--font-mono);
   }
 
-  body {
-    font-family: var(--font-sans);
-    background-color: #09090b;
-    color: #f4f4f5;
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: #182232 #06090f;
   }
 
-  h1, h2, h3, .font-display {
-    font-family: var(--font-display);
+  *::-webkit-scrollbar {
+    width: 5px;
+    height: 5px;
   }
 
-  .font-mono, code, pre {
+  *::-webkit-scrollbar-track {
+    background: #06090f;
+  }
+
+  *::-webkit-scrollbar-thumb {
+    background: #182232;
+    border-radius: 0px;
+  }
+
+  *::-webkit-scrollbar-thumb:hover {
+    background: #26354d;
+  }
+
+  .font-mono, code, pre, table, input, select, button {
     font-family: var(--font-mono);
     font-variant-numeric: tabular-nums;
   }
@@ -33,21 +59,13 @@
   font-variant-numeric: tabular-nums;
 }
 
-/* Custom subtle scrollbars for dense data tables and hex views */
-::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
-}
-
-::-webkit-scrollbar-track {
-  background: #09090b;
-}
-
-::-webkit-scrollbar-thumb {
-  background: #27272a;
-  border-radius: 2px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: #3f3f46;
+@media (prefers-reduced-motion: reduce) {
+  *,
+  ::before,
+  ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }

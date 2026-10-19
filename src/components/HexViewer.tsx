@@ -70,7 +70,6 @@ export const HexViewer: React.FC<HexViewerProps> = ({ data, baseOffset = 0, titl
     const q = searchQuery.trim();
     if (!q || data.length === 0) return;
 
-    // Support hex search if prefixed with 0x or space-separated hex pairs, otherwise ASCII case-insensitive
     let needle: number[] = [];
     if (/^([0-9a-fA-F]{2}\s*)+$/.test(q) && q.includes(' ')) {
       needle = q
@@ -120,44 +119,44 @@ export const HexViewer: React.FC<HexViewerProps> = ({ data, baseOffset = 0, titl
   }
 
   return (
-    <div className="flex flex-col h-full bg-[#0B0F17] text-slate-200 select-none">
+    <div className="flex flex-col h-full bg-[#06090f] text-[#cbd5e1] select-none font-mono text-xs">
       {/* Toolbar */}
-      <div className="flex flex-wrap items-center justify-between gap-3 px-4 py-2.5 border-b border-slate-800/80 bg-[#0F1623]">
-        <div className="flex items-center gap-3 text-xs text-slate-400 font-mono tabular-nums">
-          <span className="text-slate-200 font-medium">{title || 'Binary Stream'}</span>
-          <span aria-hidden="true">·</span>
-          <span>{data.length.toLocaleString()} bytes</span>
-          <span aria-hidden="true">·</span>
+      <div className="h-[26px] shrink-0 flex items-center justify-between gap-2 px-2.5 border-b border-[#182232] bg-[#0c121d]">
+        <div className="flex items-center gap-2 text-[11px] text-[#64748b] truncate">
+          <span className="text-slate-200 font-medium truncate">{title || 'Binary Stream'}</span>
+          <span>·</span>
+          <span>{data.length.toLocaleString()} B</span>
+          <span>·</span>
           <span>Cursor: {toHex(selectedOffset, 8)}</span>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1.5 shrink-0">
           <form onSubmit={handleJump} className="flex items-center">
             <input
               type="text"
               value={jumpInput}
               onChange={(e) => setJumpInput(e.target.value)}
-              placeholder="Jump offset (0x100)"
-              className="w-36 px-2.5 py-1 text-xs font-mono bg-[#0B0F17] border border-slate-700/80 rounded-l text-slate-200 placeholder:text-slate-500 focus:outline-none focus:border-amber-500"
+              placeholder="Jump 0x offset"
+              className="w-32 h-[20px] px-1.5 text-[10px] bg-[#06090f] border border-[#182232] text-slate-200 placeholder:text-slate-600 focus:outline-none focus:border-[#38bdf8]"
             />
             <button
               type="submit"
-              className="px-2 py-1 text-xs bg-slate-800 hover:bg-slate-700 text-slate-200 border border-l-0 border-slate-700/80 rounded-r transition-colors whitespace-nowrap shrink-0"
-              title="Jump to Offset"
+              className="h-[20px] px-1.5 bg-[#111a29] hover:bg-[#182232] text-slate-300 border border-l-0 border-[#182232] text-[10px]"
+              title="Jump"
             >
-              <ArrowRight className="w-3.5 h-3.5" />
+              <ArrowRight className="w-2.5 h-2.5" />
             </button>
           </form>
 
           <form onSubmit={handleSearch} className="flex items-center">
             <div className="relative flex items-center">
-              <Search className="w-3.5 h-3.5 text-slate-500 absolute left-2.5 pointer-events-none" />
+              <Search className="w-2.5 h-2.5 text-slate-600 absolute left-1.5 pointer-events-none" />
               <input
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Find ASCII or Hex..."
-                className="w-40 pl-7 pr-2.5 py-1 text-xs font-mono bg-[#0B0F17] border border-slate-700/80 rounded text-slate-200 placeholder:text-slate-500 focus:outline-none focus:border-amber-500"
+                className="w-36 h-[20px] pl-5 pr-1 text-[10px] bg-[#06090f] border border-[#182232] text-slate-200 placeholder:text-slate-600 focus:outline-none focus:border-[#38bdf8]"
               />
             </div>
           </form>
@@ -165,10 +164,10 @@ export const HexViewer: React.FC<HexViewerProps> = ({ data, baseOffset = 0, titl
           <button
             type="button"
             onClick={handleCopyHexSlice}
-            className="flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium bg-slate-800/90 hover:bg-slate-700 text-slate-200 border border-slate-700/80 rounded transition-colors whitespace-nowrap shrink-0"
+            className="h-[20px] flex items-center gap-1 px-2 text-[10px] bg-[#111a29] hover:border-[#38bdf8] text-slate-200 border border-[#182232]"
           >
-            {copiedHex ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
-            <span>{copiedHex ? 'Copied Hex' : 'Copy Page Hex'}</span>
+            {copiedHex ? <Check className="w-2.5 h-2.5 text-[#34d399]" /> : <Copy className="w-2.5 h-2.5" />}
+            <span>{copiedHex ? 'Copied' : 'Copy Page'}</span>
           </button>
         </div>
       </div>
@@ -176,41 +175,41 @@ export const HexViewer: React.FC<HexViewerProps> = ({ data, baseOffset = 0, titl
       {/* Main Split: Hex Matrix + Data Inspector */}
       <div className="flex-1 grid grid-cols-1 xl:grid-cols-12 min-h-0 overflow-hidden">
         {/* Hex Matrix */}
-        <div className="xl:col-span-8 overflow-auto p-4 font-mono text-xs leading-6 tabular-nums border-b xl:border-b-0 xl:border-r border-slate-800/80">
+        <div className="xl:col-span-8 overflow-auto p-2 text-xs leading-5 tabular-nums border-b xl:border-b-0 xl:border-r border-[#182232] bg-[#06090f]">
           {/* Column Header */}
-          <div className="flex items-center text-slate-500 pb-2 mb-2 border-b border-slate-800/80 select-none">
-            <span className="w-24 shrink-0">OFFSET</span>
-            <div className="flex-1 grid grid-cols-16 gap-1 text-center">
+          <div className="flex items-center text-[#64748b] pb-1 mb-1 border-b border-[#182232] select-none text-[10px]">
+            <span className="w-20 shrink-0">OFFSET</span>
+            <div className="flex-1 grid grid-cols-16 gap-0.5 text-center">
               {Array.from({ length: 16 }).map((_, idx) => (
-                <span key={idx} className={idx === 8 ? 'pl-1 text-amber-400/80' : ''}>
+                <span key={idx} className={idx === 8 ? 'pl-0.5 text-[#38bdf8]' : ''}>
                   {idx.toString(16).toUpperCase().padStart(2, '0')}
                 </span>
               ))}
             </div>
-            <span className="w-40 shrink-0 pl-4">ASCII DECODED</span>
+            <span className="w-36 shrink-0 pl-3">ASCII</span>
           </div>
 
           {rows.length === 0 ? (
-            <div className="py-12 text-center text-slate-500">Empty binary payload (0 bytes).</div>
+            <div className="py-8 text-center text-[#64748b]">Empty binary payload.</div>
           ) : (
             rows.map((rowOffset) => {
               const rowSlice = data.subarray(rowOffset, Math.min(data.length, rowOffset + BYTES_PER_ROW));
               return (
                 <div
                   key={rowOffset}
-                  className="flex items-center hover:bg-slate-900/70 rounded px-1 -mx-1 transition-colors"
+                  className="flex items-center hover:bg-[#38bdf8]/[0.06] px-0.5"
                 >
                   {/* Offset Column */}
-                  <span className="w-24 shrink-0 text-slate-500 select-all">
+                  <span className="w-20 shrink-0 text-[#64748b] select-all text-[11px]">
                     {(baseOffset + rowOffset).toString(16).toUpperCase().padStart(8, '0')}
                   </span>
 
                   {/* 16 Hex Bytes */}
-                  <div className="flex-1 grid grid-cols-16 gap-1 text-center">
+                  <div className="flex-1 grid grid-cols-16 gap-0.5 text-center text-[11px]">
                     {Array.from({ length: 16 }).map((_, colIdx) => {
                       const absIdx = rowOffset + colIdx;
                       if (absIdx >= data.length) {
-                        return <span key={colIdx} className="text-slate-800">··</span>;
+                        return <span key={colIdx} className="text-[#182232]">··</span>;
                       }
                       const byteVal = data[absIdx];
                       const isSelected = absIdx === selectedOffset;
@@ -222,14 +221,14 @@ export const HexViewer: React.FC<HexViewerProps> = ({ data, baseOffset = 0, titl
                           key={colIdx}
                           type="button"
                           onClick={() => setSelectedOffset(absIdx)}
-                          className={`rounded px-0.5 transition-colors ${colIdx === 8 ? 'ml-1' : ''} ${
+                          className={`px-0.5 ${colIdx === 8 ? 'ml-0.5' : ''} ${
                             isSelected
-                              ? 'bg-amber-500 text-slate-950 font-semibold'
+                              ? 'bg-[#38bdf8] text-slate-950 font-bold'
                               : isRangeHighlight
-                              ? 'bg-amber-500/20 text-amber-200'
+                              ? 'bg-[#38bdf8]/20 text-[#38bdf8]'
                               : isNull
-                              ? 'text-slate-600 hover:text-slate-300'
-                              : 'text-slate-200 hover:bg-slate-800'
+                              ? 'text-[#475569]'
+                              : 'text-slate-200 hover:text-white'
                           }`}
                         >
                           {byteVal.toString(16).toUpperCase().padStart(2, '0')}
@@ -239,7 +238,7 @@ export const HexViewer: React.FC<HexViewerProps> = ({ data, baseOffset = 0, titl
                   </div>
 
                   {/* ASCII Column */}
-                  <div className="w-40 shrink-0 pl-4 tracking-wider text-slate-400 flex">
+                  <div className="w-36 shrink-0 pl-3 tracking-wider text-slate-400 flex text-[11px]">
                     {Array.from(rowSlice).map((b, colIdx) => {
                       const absIdx = rowOffset + colIdx;
                       const isSelected = absIdx === selectedOffset;
@@ -250,10 +249,10 @@ export const HexViewer: React.FC<HexViewerProps> = ({ data, baseOffset = 0, titl
                           onClick={() => setSelectedOffset(absIdx)}
                           className={`cursor-pointer ${
                             isSelected
-                              ? 'bg-amber-500 text-slate-950 font-bold'
+                              ? 'bg-[#38bdf8] text-slate-950 font-bold'
                               : b >= 32 && b <= 126
-                              ? 'text-emerald-300/90'
-                              : 'text-slate-600'
+                              ? 'text-[#34d399]'
+                              : 'text-[#475569]'
                           }`}
                         >
                           {ch}
@@ -268,59 +267,57 @@ export const HexViewer: React.FC<HexViewerProps> = ({ data, baseOffset = 0, titl
         </div>
 
         {/* Right Column: Live Binary Data Type Inspector */}
-        <div className="xl:col-span-4 p-4 bg-[#0D131F] overflow-y-auto flex flex-col justify-between gap-4">
-          <div className="space-y-4">
+        <div className="xl:col-span-4 p-3 bg-[#090d14] overflow-y-auto flex flex-col justify-between gap-3">
+          <div className="space-y-2">
             <div>
-              <h4 className="text-xs font-semibold text-slate-300 tracking-tight mb-1">
-                Data Type Inspector (Cursor +4B Highlighted)
+              <h4 className="text-[11px] font-semibold text-[#38bdf8] uppercase tracking-wider mb-0.5">
+                Data Type Inspector
               </h4>
-              <p className="text-xs text-slate-400">
-                Click any byte in the matrix to inspect integer, float, and string representations at that offset.
+              <p className="text-[10px] text-[#64748b]">
+                Click any byte to decode integer, float, and string representations.
               </p>
             </div>
 
             {decodedValues ? (
-              <div className="border border-slate-800 rounded-lg divide-y divide-slate-800/80 font-mono text-xs tabular-nums bg-[#0B0F17]">
-                <div className="flex items-center justify-between px-3 py-2">
-                  <span className="text-slate-400">Relative Offset</span>
-                  <span className="text-amber-300 font-medium">
+              <div className="border border-[#182232] divide-y divide-[#182232] text-[11px] tabular-nums bg-[#06090f]">
+                <div className="flex items-center justify-between px-2.5 py-1">
+                  <span className="text-[#64748b]">Relative Offset</span>
+                  <span className="text-[#38bdf8] font-medium">
                     {toHex(selectedOffset)} ({selectedOffset.toLocaleString()})
                   </span>
                 </div>
-                <div className="flex items-center justify-between px-3 py-2">
-                  <span className="text-slate-400">Archive Offset</span>
+                <div className="flex items-center justify-between px-2.5 py-1">
+                  <span className="text-[#64748b]">Archive Offset</span>
                   <span className="text-slate-200">
                     {toHex(baseOffset + selectedOffset)} ({(baseOffset + selectedOffset).toLocaleString()})
                   </span>
                 </div>
-                <div className="flex items-center justify-between px-3 py-2">
-                  <span className="text-slate-400">UInt8 / Int8</span>
+                <div className="flex items-center justify-between px-2.5 py-1">
+                  <span className="text-[#64748b]">UInt8 / Int8</span>
                   <span className="text-slate-200">
-                    {decodedValues.u8} / {decodedValues.i8} (0b{decodedValues.u8.toString(2).padStart(8, '0')})
+                    {decodedValues.u8} / {decodedValues.i8}
                   </span>
                 </div>
-                <div className="flex items-center justify-between px-3 py-2">
-                  <span className="text-slate-400">UInt16 (LE / BE)</span>
+                <div className="flex items-center justify-between px-2.5 py-1">
+                  <span className="text-[#64748b]">UInt16 (LE / BE)</span>
                   <span className="text-slate-200">
                     {decodedValues.u16le !== null ? `${decodedValues.u16le} / ${decodedValues.u16be}` : 'EOF'}
                   </span>
                 </div>
-                <div className="flex items-center justify-between px-3 py-2">
-                  <span className="text-slate-400">Int32 (Little Endian)</span>
-                  <span className="text-emerald-300">
+                <div className="flex items-center justify-between px-2.5 py-1">
+                  <span className="text-[#64748b]">Int32 (LE)</span>
+                  <span className="text-[#34d399]">
                     {decodedValues.i32le !== null ? decodedValues.i32le.toLocaleString() : 'EOF'}
                   </span>
                 </div>
-                <div className="flex items-center justify-between px-3 py-2">
-                  <span className="text-slate-400">UInt32 Hex (LE / BE)</span>
+                <div className="flex items-center justify-between px-2.5 py-1">
+                  <span className="text-[#64748b]">UInt32 Hex (LE)</span>
                   <span className="text-slate-200">
-                    {decodedValues.u32le !== null
-                      ? `${toHex(decodedValues.u32le)} / ${toHex(decodedValues.u32be!)}`
-                      : 'EOF'}
+                    {decodedValues.u32le !== null ? toHex(decodedValues.u32le) : 'EOF'}
                   </span>
                 </div>
-                <div className="flex items-center justify-between px-3 py-2">
-                  <span className="text-slate-400">Float32 (IEEE 754 LE)</span>
+                <div className="flex items-center justify-between px-2.5 py-1">
+                  <span className="text-[#64748b]">Float32 (IEEE 754)</span>
                   <span className="text-slate-200">
                     {decodedValues.f32le !== null
                       ? Number.isFinite(decodedValues.f32le)
@@ -329,32 +326,32 @@ export const HexViewer: React.FC<HexViewerProps> = ({ data, baseOffset = 0, titl
                       : 'EOF'}
                   </span>
                 </div>
-                <div className="flex items-center justify-between px-3 py-2">
-                  <span className="text-slate-400">ASCII String (16B)</span>
-                  <span className="text-amber-200 truncate max-w-[180px]">"{decodedValues.asciiPreview}"</span>
+                <div className="flex items-center justify-between px-2.5 py-1">
+                  <span className="text-[#64748b]">ASCII (16B)</span>
+                  <span className="text-amber-300 truncate max-w-[150px]">"{decodedValues.asciiPreview}"</span>
                 </div>
               </div>
             ) : null}
           </div>
 
           {/* Pagination Controls */}
-          <div className="pt-3 border-t border-slate-800/80 flex items-center justify-between text-xs font-mono tabular-nums">
+          <div className="pt-2 border-t border-[#182232] flex items-center justify-between text-[10px] font-mono tabular-nums">
             <button
               type="button"
               disabled={safePage === 0}
               onClick={() => setPage((p) => Math.max(0, p - 1))}
-              className="px-3 py-1.5 rounded bg-slate-800 hover:bg-slate-700 disabled:opacity-40 text-slate-200 transition-colors whitespace-nowrap shrink-0"
+              className="h-[20px] px-2 bg-[#111a29] border border-[#182232] hover:border-[#38bdf8] disabled:opacity-30 text-slate-200"
             >
               Prev 512B
             </button>
-            <span className="text-slate-400">
+            <span className="text-[#64748b]">
               Page {safePage + 1} / {totalPages}
             </span>
             <button
               type="button"
               disabled={safePage >= totalPages - 1}
               onClick={() => setPage((p) => Math.min(totalPages - 1, p + 1))}
-              className="px-3 py-1.5 rounded bg-slate-800 hover:bg-slate-700 disabled:opacity-40 text-slate-200 transition-colors whitespace-nowrap shrink-0"
+              className="h-[20px] px-2 bg-[#111a29] border border-[#182232] hover:border-[#38bdf8] disabled:opacity-30 text-slate-200"
             >
               Next 512B
             </button>
