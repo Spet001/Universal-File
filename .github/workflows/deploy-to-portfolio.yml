@@ -1,0 +1,62 @@
+name: Deploy Universal File to Portfolio
+
+on:
+  push:
+    branches: [main, master]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: 'portfolio-deploy'
+  cancel-in-progress: false
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Tool Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js Runtime
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: 'npm'
+
+      - name: Install Dependencies
+        run: npm ci
+
+      - name: Run Test Suite
+        run: npm test
+
+      - name: Build Production Artifacts
+        run: npm run build
+
+      - name: Checkout Portfolio Repository
+        uses: actions/checkout@v4
+        with:
+          repository: 'Spet001/Spet001.github.io'
+          token: ${{ secrets.PORTFOLIO_DEPLOY_TOKEN || secrets.GH_PAT || secrets.GITHUB_TOKEN }}
+          path: 'portfolio-target'
+          ref: 'main'
+
+      - name: Sync Build Artifacts to Portfolio
+        run: |
+          mkdir -p portfolio-target/tools/universal-file
+          # Remove stale hashed assets to prevent accumulation
+          rm -rf portfolio-target/tools/universal-file/assets
+          # Copy complete build output
+          cp -r dist/* portfolio-target/tools/universal-file/
+          cd portfolio-target
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add tools/universal-file
+          if git diff --staged --quiet; then
+            echo "No artifact changes detected. Skipping commit."
+          else
+            git commit -m "chore(tools): update universal-file build artifacts [skip ci]"
+            git push origin main
+          fi

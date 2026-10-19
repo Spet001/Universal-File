@@ -1,26 +1,73 @@
 @import "tailwindcss";
 
 @layer base {
-  :root {
+  /* Default: Slade Industrial (Amber / Carmine Forge) */
+  :root, [data-theme="slade"] {
+    --bg-canvas: #080706;
+    --bg-panel: #0e0c0a;
+    --bg-header: #161310;
+    --bg-active: #241c14;
+    --border-hairline: #29231d;
+    --border-subtle: #3d3227;
+    --accent-primary: #f59e0b;
+    --accent-secondary: #ef4444;
+    --text-main: #e7e5e4;
+    --text-secondary: #a8a29e;
+    --text-muted: #78716c;
+    --font-mono: 'JetBrains Mono', 'Fira Code', ui-monospace, SFMono-Regular, monospace;
+  }
+
+  /* Pitch Black (OLED) */
+  [data-theme="oled"] {
+    --bg-canvas: #000000;
+    --bg-panel: #070707;
+    --bg-header: #0d0d0d;
+    --bg-active: #161616;
+    --border-hairline: #1f1f1f;
+    --border-subtle: #2d2d2d;
+    --accent-primary: #00e5ff;
+    --accent-secondary: #10b981;
+    --text-main: #e2e8f0;
+    --text-secondary: #94a3b8;
+    --text-muted: #64748b;
+  }
+
+  /* Classic Dark Navy (Cobalt) */
+  [data-theme="cobalt"] {
     --bg-canvas: #06090f;
     --bg-panel: #090d14;
     --bg-header: #0c121d;
     --bg-active: #111a29;
-    --text-primary: #cbd5e1;
+    --border-hairline: #182232;
+    --border-subtle: #26354d;
+    --accent-primary: #38bdf8;
+    --accent-secondary: #34d399;
+    --text-main: #cbd5e1;
     --text-secondary: #94a3b8;
     --text-muted: #64748b;
-    --accent-cyan: #38bdf8;
-    --accent-amber: #f59e0b;
-    --border-hairline: #182232;
-    --font-mono: 'JetBrains Mono', 'Fira Code', ui-monospace, SFMono-Regular, monospace;
+  }
+
+  /* IDA Classic Dark (Graphite) */
+  [data-theme="ida"] {
+    --bg-canvas: #141414;
+    --bg-panel: #1a1a1a;
+    --bg-header: #202020;
+    --bg-active: #262626;
+    --border-hairline: #2a2a2a;
+    --border-subtle: #3a3a3a;
+    --accent-primary: #60a5fa;
+    --accent-secondary: #facc15;
+    --text-main: #e5e5e5;
+    --text-secondary: #a3a3a3;
+    --text-muted: #737373;
   }
 
   html, body, #root {
     height: 100%;
     max-height: 100%;
     overflow: hidden;
-    background-color: #06090f;
-    color: #cbd5e1;
+    background-color: var(--bg-canvas);
+    color: var(--text-main);
     user-select: none;
     -webkit-user-select: none;
     font-family: var(--font-mono);
@@ -28,7 +75,7 @@
 
   * {
     scrollbar-width: thin;
-    scrollbar-color: #182232 #06090f;
+    scrollbar-color: var(--border-hairline) var(--bg-canvas);
   }
 
   *::-webkit-scrollbar {
@@ -37,16 +84,16 @@
   }
 
   *::-webkit-scrollbar-track {
-    background: #06090f;
+    background: var(--bg-canvas);
   }
 
   *::-webkit-scrollbar-thumb {
-    background: #182232;
+    background: var(--border-hairline);
     border-radius: 0px;
   }
 
   *::-webkit-scrollbar-thumb:hover {
-    background: #26354d;
+    background: var(--border-subtle);
   }
 
   .font-mono, code, pre, table, input, select, button {
@@ -55,8 +102,130 @@
   }
 }
 
+/* Theme Surface Overrides */
+[data-theme] {
+  background-color: var(--bg-canvas);
+  color: var(--text-main);
+}
+
+[data-theme] .bg-\[\#06090f\],
+[data-theme] .bg-\[\#080b11\],
+[data-theme] .bg-\[\#05070b\],
+[data-theme] .bg-\[\#05070B\] {
+  background-color: var(--bg-canvas) !important;
+}
+
+[data-theme] .bg-\[\#090d14\],
+[data-theme] .bg-\[\#070a10\],
+[data-theme] .bg-\[\#0B0F17\] {
+  background-color: var(--bg-panel) !important;
+}
+
+[data-theme] .bg-\[\#0c121d\],
+[data-theme] header.bg-\[\#06090f\],
+[data-theme] footer.bg-\[\#05070b\] {
+  background-color: var(--bg-header) !important;
+}
+
+[data-theme] .bg-\[\#111a29\] {
+  background-color: var(--bg-active) !important;
+}
+
+[data-theme] .border-\[\#182232\] {
+  border-color: var(--border-hairline) !important;
+}
+
+[data-theme] .border-\[\#26354d\] {
+  border-color: var(--border-subtle) !important;
+}
+
+/* Universal Accent Variables Mapping */
+[data-theme] .text-\[\#38bdf8\] {
+  color: var(--accent-primary) !important;
+}
+[data-theme] .hover\:text-\[\#38bdf8\]:hover {
+  color: var(--accent-primary) !important;
+}
+[data-theme] .border-\[\#38bdf8\],
+[data-theme] .border-l-\[\#38bdf8\],
+[data-theme] .border-t-\[\#38bdf8\],
+[data-theme] .border-r-\[\#38bdf8\],
+[data-theme] .border-b-\[\#38bdf8\] {
+  border-color: var(--accent-primary) !important;
+}
+[data-theme] .hover\:border-\[\#38bdf8\]:hover {
+  border-color: var(--accent-primary) !important;
+}
+[data-theme] .focus\:border-\[\#38bdf8\]:focus {
+  border-color: var(--accent-primary) !important;
+}
+[data-theme] .bg-\[\#38bdf8\] {
+  background-color: var(--accent-primary) !important;
+  color: var(--bg-canvas) !important;
+}
+[data-theme] .hover\:bg-\[\#38bdf8\]\/90:hover {
+  background-color: var(--accent-primary) !important;
+  opacity: 0.9 !important;
+}
+[data-theme] .bg-\[\#38bdf8\]\/20,
+[data-theme] .hover\:bg-\[\#38bdf8\]\/20:hover {
+  background-color: color-mix(in srgb, var(--accent-primary) 20%, transparent) !important;
+}
+[data-theme] .hover\:bg-\[\#38bdf8\]\/\[0\.08\]:hover,
+[data-theme] .hover\:bg-\[\#38bdf8\]\/\[0\.06\]:hover {
+  background-color: color-mix(in srgb, var(--accent-primary) 8%, transparent) !important;
+}
+
+/* Slade Industrial Specific Overrides (Replace remaining cyan highlights) */
+[data-theme="slade"] .text-cyan-400 {
+  color: var(--accent-primary) !important;
+}
+[data-theme="slade"] .hover\:text-cyan-400:hover {
+  color: var(--accent-primary) !important;
+}
+[data-theme="slade"] .border-cyan-400,
+[data-theme="slade"] .border-cyan-500\/20 {
+  border-color: var(--accent-primary) !important;
+}
+[data-theme="slade"] .hover\:border-cyan-400:hover {
+  border-color: var(--accent-primary) !important;
+}
+[data-theme="slade"] .bg-cyan-500,
+[data-theme="slade"] .hover\:bg-cyan-400:hover {
+  background-color: var(--accent-primary) !important;
+  color: #080706 !important;
+}
+[data-theme="slade"] .bg-cyan-500\/10,
+[data-theme="slade"] .hover\:bg-cyan-500\/10:hover {
+  background-color: color-mix(in srgb, var(--accent-primary) 12%, transparent) !important;
+}
+
+/* OLED Specific Overrides */
+[data-theme="oled"] .bg-\[\#38bdf8\] {
+  background-color: var(--accent-primary) !important;
+  color: #000000 !important;
+}
+
+/* IDA Specific Overrides */
+[data-theme="ida"] .bg-\[\#38bdf8\] {
+  background-color: var(--accent-primary) !important;
+  color: #141414 !important;
+}
+
 .tabular-nums {
   font-variant-numeric: tabular-nums;
+}
+
+.pixelated {
+  image-rendering: pixelated;
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }
 
 @media (prefers-reduced-motion: reduce) {

@@ -32,12 +32,84 @@ import { HexViewer } from './components/HexViewer';
 import { AssetPreviewer } from './components/AssetPreviewer';
 import { ArchiveBuilderModal } from './components/ArchiveBuilderModal';
 import { zlibSync, unzlibSync } from 'fflate';
+import { THEMES, ThemeId, DEFAULT_THEME } from './theme';
 
 type InspectorDockTab = 'preview' | 'hex' | 'archive_hex' | 'headers' | 'zlib' | 'formats';
 type SortField = 'name' | 'size' | 'offset' | 'category';
 
+const getBaseUrl = (): string => {
+  const meta = import.meta as unknown as { env?: { BASE_URL?: string } };
+  return meta.env?.BASE_URL || './';
+};
+
+function getEntryIconUrl(entry: ArchiveEntry): string {
+  const base = getBaseUrl();
+  const name = entry.name.toLowerCase();
+  if (entry.category === 'map' || name.startsWith('map') || /^e\dm\d/i.test(name)) {
+    return `${base}icons/world-0.png`;
+  }
+  if (entry.category === 'audio' || name.endsWith('.wav') || name.endsWith('.mp3') || name.endsWith('.ogg') || name.endsWith('.hca') || name.endsWith('.adx')) {
+    return `${base}icons/loudspeaker_rays-0.png`;
+  }
+  if (entry.category === 'texture' || entry.category === 'palette' || name.endsWith('.png') || name.endsWith('.tga') || name.endsWith('.dds') || name.endsWith('.bmp') || name.endsWith('.tim')) {
+    return `${base}icons/paint_file-0.png`;
+  }
+  if (entry.category === 'script' || entry.category === 'config' || name.endsWith('.gsc') || name.endsWith('.csc') || name.endsWith('.txt') || name.endsWith('.cfg') || name.endsWith('.json') || name.endsWith('.csv')) {
+    return `${base}icons/notepad_file-0.png`;
+  }
+  if (entry.category === 'package' || name.endsWith('.pak') || name.endsWith('.wad') || name.endsWith('.zip') || name.endsWith('.pk3') || name.endsWith('.jar') || name.endsWith('.pkg')) {
+    return `${base}icons/package-0.png`;
+  }
+  return `${base}icons/executable-0.png`;
+}
+
+function getCompactTypeTag(entry: ArchiveEntry): string {
+  const name = entry.name.toLowerCase();
+  if (entry.uncompressedSize === 0 && entry.category === 'map') {
+    return 'MAP/MARK';
+  }
+  if (entry.category === 'map' || name.endsWith('.bsp') || /^map\d\d/i.test(name)) {
+    return 'MAP/RAW';
+  }
+  if (entry.category === 'texture' || entry.category === 'palette' || name.endsWith('.dds') || name.endsWith('.tga') || name.endsWith('.png') || name.endsWith('.tim')) {
+    return 'TEX/PAL';
+  }
+  if (entry.category === 'audio' || name.endsWith('.wav') || name.endsWith('.hca') || name.endsWith('.adx') || name.endsWith('.ogg')) {
+    return 'SND/RAW';
+  }
+  if (entry.category === 'script' || name.endsWith('.gsc') || name.endsWith('.csc') || name.endsWith('.lua')) {
+    return 'SCR/GSC';
+  }
+  if (entry.category === 'model' || name.endsWith('.mdl') || name.endsWith('.bmodel')) {
+    return 'MOD/3D';
+  }
+  if (entry.category === 'package' || name.endsWith('.zip') || name.endsWith('.pk3') || name.endsWith('.pak')) {
+    return 'ARC/SUB';
+  }
+  if (entry.category === 'config' || name.endsWith('.cfg') || name.endsWith('.csv') || name.endsWith('.json')) {
+    return 'CFG/TXT';
+  }
+  return 'BIN/RAW';
+}
+
 export default function App() {
   const fileInputRef = useRef<HTMLInputElement | null>(null);
+
+  const [currentTheme, setCurrentTheme] = useState<ThemeId>(() => {
+    const saved = localStorage.getItem('spet-file-opener-theme');
+    if (saved === 'slade' || saved === 'oled' || saved === 'cobalt' || saved === 'ida') {
+      return saved as ThemeId;
+    }
+    return DEFAULT_THEME;
+  });
+
+  useEffect(() => {
+    localStorage.setItem('spet-file-opener-theme', currentTheme);
+    document.documentElement.setAttribute('data-theme', currentTheme);
+    document.body.setAttribute('data-theme', currentTheme);
+  }, [currentTheme]);
+
+  const [showAboutModal, setShowAboutModal] = useState<boolean>(false);
 
   const [archive, setArchive] = useState<ParsedArchive | null>(null);
   const [isLoadingArchive, setIsLoadingArchive] = useState<boolean>(false);
@@ -376,8 +448,16 @@ export default function App() {
       {/* ============================================================== */}
       <header className="h-[28px] shrink-0 bg-[#06090f] border-b border-[#182232] px-2.5 flex items-center justify-between text-[11px] font-mono z-30 select-none">
         {/* Left: Tool Brand + Menu Triggers */}
-        <div className="flex items-center gap-1.5">
-          <span className="font-bold text-[#38bdf8] tracking-wider pr-1">SPET::FILE_OPENER</span>
+        <div className="flex items-center gap-2 shrink-0">
+          <div className="flex items-center gap-1.5 pr-2 select-none">
+            <img
+              src={`${getBaseUrl()}icons/hard_disk_drive-0.png`}
+              alt=""
+              className="pixelated shrink-0 w-3.5 h-3.5"
+            />
+            <span className="font-sans font-bold tracking-tight text-[#f59e0b]">Spet's</span>
+            <span className="font-mono font-semibold text-slate-100 tracking-tight">Universal Game File Opener</span>
+          </div>
 
           <nav className="relative flex items-center gap-0.5 text-[11px]">
             {/* FILE MENU */}
@@ -550,6 +630,24 @@ export default function App() {
                       {activeDockTab === tabId && <Check className="h-3 w-3 text-[#38bdf8]" />}
                     </button>
                   ))}
+                  <div className="my-1 border-t border-[#182232]" />
+                  <div className="px-3 py-0.5 text-[9px] font-semibold uppercase tracking-wider text-[#64748b]">
+                    UI Color Theme
+                  </div>
+                  {THEMES.map((th) => (
+                    <button
+                      key={th.id}
+                      type="button"
+                      onClick={() => {
+                        setCurrentTheme(th.id);
+                        setOpenMenu(null);
+                      }}
+                      className="flex w-full items-center justify-between px-3 py-1 text-left text-slate-200 hover:bg-[#111a29]"
+                    >
+                      <span>{th.name}</span>
+                      {currentTheme === th.id && <Check className="h-3 w-3 text-[#38bdf8]" />}
+                    </button>
+                  ))}
                 </div>
               )}
             </div>
@@ -566,19 +664,74 @@ export default function App() {
             </button>
 
             {/* HELP MENU */}
-            <button
-              type="button"
-              onClick={() => setActiveDockTab('formats')}
-              className={`px-1.5 py-0.5 text-slate-300 hover:text-white hover:bg-[#111a29] ${
-                activeDockTab === 'formats' ? 'bg-[#111a29] text-[#38bdf8]' : ''
-              }`}
-            >
-              Help
-            </button>
+            <div className="relative">
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setOpenMenu(openMenu === 'help' ? null : 'help');
+                }}
+                className={`px-1.5 py-0.5 text-slate-300 hover:text-white hover:bg-[#111a29] ${
+                  openMenu === 'help' ? 'bg-[#111a29] text-white' : ''
+                }`}
+              >
+                Help
+              </button>
+              {openMenu === 'help' && (
+                <div
+                  onClick={(e) => e.stopPropagation()}
+                  className="absolute left-0 top-full mt-0.5 w-60 border border-[#182232] bg-[#090d14] py-1 shadow-2xl z-50 text-[11px]"
+                >
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setActiveDockTab('formats');
+                      setOpenMenu(null);
+                    }}
+                    className="flex w-full items-center justify-between px-3 py-1 text-left text-slate-200 hover:bg-[#111a29]"
+                  >
+                    <span>Supported Formats Matrix</span>
+                    <span className="text-[10px] text-[#64748b]">25+ Engines</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setActiveDockTab('archive_hex');
+                      setOpenMenu(null);
+                    }}
+                    className="flex w-full items-center px-3 py-1 text-left text-slate-200 hover:bg-[#111a29]"
+                  >
+                    Raw Container Hex Inspector
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setActiveDockTab('headers');
+                      setOpenMenu(null);
+                    }}
+                    className="flex w-full items-center px-3 py-1 text-left text-slate-200 hover:bg-[#111a29]"
+                  >
+                    Master Binary Headers Table
+                  </button>
+                  <div className="my-1 border-t border-[#182232]" />
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setShowAboutModal(true);
+                      setOpenMenu(null);
+                    }}
+                    className="flex w-full items-center justify-between px-3 py-1 text-left text-[#38bdf8] hover:bg-[#111a29]"
+                  >
+                    <span>About Game File Opener</span>
+                    <span className="text-[10px] text-emerald-400 font-semibold">[Pure WASM]</span>
+                  </button>
+                </div>
+              )}
+            </div>
           </nav>
         </div>
 
-        {/* Center/Right: Active Archive Telemetry + Load Button */}
+        {/* Center/Right: Active Archive Telemetry + Theme Switcher + Load Button */}
         <div className="flex items-center gap-2">
           {/* Active Container Telemetry */}
           <div className="hidden lg:flex items-center gap-1.5 text-[11px] text-[#64748b] truncate max-w-xl">
@@ -601,6 +754,22 @@ export default function App() {
             )}
           </div>
 
+          {/* Theme Selector */}
+          <div className="flex items-center gap-1 shrink-0">
+            <span className="text-[10px] text-[#64748b]">Theme:</span>
+            <select
+              value={currentTheme}
+              onChange={(e) => setCurrentTheme(e.target.value as ThemeId)}
+              className="h-[20px] px-1 bg-[#090d14] border border-[#182232] text-[10px] text-slate-300 font-mono focus:border-[#38bdf8] focus:outline-none"
+            >
+              {THEMES.map((th) => (
+                <option key={th.id} value={th.id}>
+                  {th.name}
+                </option>
+              ))}
+            </select>
+          </div>
+
           {/* Compact Sample Selector Dropdown */}
           <div className="flex items-center gap-1">
             <select
@@ -621,9 +790,13 @@ export default function App() {
             <button
               type="button"
               onClick={() => fileInputRef.current?.click()}
-              className="h-[20px] px-2 bg-[#111a29] border border-[#26354d] hover:border-[#38bdf8] text-[10px] text-slate-200 font-mono flex items-center gap-1 cursor-pointer"
+              className="h-[20px] px-2 bg-[#111a29] border border-[#26354d] hover:border-[#38bdf8] text-[10px] text-slate-200 font-mono flex items-center gap-1.5 cursor-pointer"
             >
-              <FolderOpen className="h-2.5 w-2.5 text-[#38bdf8]" />
+              <img
+                src={`${getBaseUrl()}icons/directory_open_file_mydocs-4.png`}
+                alt=""
+                className="pixelated shrink-0 w-3 h-3"
+              />
               <span>[Load File]</span>
             </button>
           </div>
@@ -674,28 +847,32 @@ export default function App() {
         {/* ============================================================== */}
         {/* ZONE C: Left Dock Pane (w-[270px] shrink-0 border-r border-[#182232]) */}
         {/* ============================================================== */}
-        <aside className="w-[270px] shrink-0 border-r border-[#182232] flex flex-col bg-[#090d14] overflow-hidden select-none">
-          {/* Compressed 3-line Engine Signature Header */}
-          <div className="p-2 border-b border-[#182232] bg-[#070a10] font-mono text-[11px] space-y-0.5 shrink-0">
-            <div className="flex items-center justify-between">
-              <span className="text-[#64748b]">Engine:</span>
-              <span className="text-white font-semibold truncate max-w-[170px]">
+        <aside className="w-[270px] shrink-0 border-r border-[#182232] flex flex-col min-h-0 bg-[#090d14] overflow-hidden select-none">
+          {/* Clean 4-Row Engine Key-Value Table */}
+          <div className="p-2 border-b border-[#182232] bg-[#070a10] font-mono text-[10px] space-y-1 shrink-0">
+            <div className="flex items-center justify-between gap-1">
+              <span className="text-[#64748b] uppercase tracking-wider shrink-0 w-[54px]">Engine:</span>
+              <span className="text-white font-semibold truncate text-right flex-1" title={archive ? archive.engineFamily : 'Generic Binary Engine'}>
                 {archive ? archive.engineFamily : 'Generic Binary Engine'}
               </span>
             </div>
-            <div className="flex items-center justify-between">
-              <span className="text-[#64748b]">Magic:</span>
-              <span className="text-[#f59e0b] font-mono">
-                {archive ? archive.magicBytes : '0x00000000'}
-              </span>
-              <span className="text-[#64748b]">| Form:</span>
-              <span className="text-[#38bdf8] font-mono">
-                {archive ? archive.formatId : 'AUTO'}
+            <div className="flex items-center justify-between gap-1">
+              <span className="text-[#64748b] uppercase tracking-wider shrink-0 w-[54px]">Format:</span>
+              <span className="text-[#38bdf8] font-bold truncate text-right flex-1">
+                {archive ? `${archive.formatId} (${archive.formatName})` : 'AUTO'}
               </span>
             </div>
-            <div className="flex items-center justify-between text-[10px] text-[#64748b]">
-              <span>Disk: {archive ? formatBytes(archive.fileSize) : '0 B'}</span>
-              <span>Ext: {archive ? archive.entries.length.toLocaleString() : '0'} lumps</span>
+            <div className="flex items-center justify-between gap-1">
+              <span className="text-[#64748b] uppercase tracking-wider shrink-0 w-[54px]">Magic:</span>
+              <span className="text-[#f59e0b] font-mono tabular-nums text-right flex-1">
+                {archive ? archive.magicBytes : '0x00000000'}
+              </span>
+            </div>
+            <div className="flex items-center justify-between gap-1">
+              <span className="text-[#64748b] uppercase tracking-wider shrink-0 w-[84px]">Disk / Entries:</span>
+              <span className="text-slate-300 tabular-nums text-right flex-1 truncate">
+                {archive ? `${formatBytes(archive.fileSize)} / ${archive.entries.length.toLocaleString()} lumps` : '0 B / 0 lumps'}
+              </span>
             </div>
           </div>
 
@@ -706,7 +883,7 @@ export default function App() {
           </div>
 
           {/* Virtual Directories Tree (100% of remaining vertical height) */}
-          <div className="flex-1 overflow-y-auto py-1 font-mono text-[11px] divide-y divide-[#182232]/40 bg-[#090d14]">
+          <div className="flex-1 min-h-0 overflow-y-auto py-1 font-mono text-[11px] divide-y divide-[#182232]/40 bg-[#090d14]">
             <button
               type="button"
               onClick={() => setSelectedFolder('ALL')}
@@ -717,7 +894,11 @@ export default function App() {
               }`}
             >
               <span className="flex items-center gap-1.5 truncate">
-                <FolderOpen className="w-3 h-3 text-[#38bdf8] shrink-0" />
+                <img
+                  src={`${getBaseUrl()}icons/directory_open_file_mydocs-4.png`}
+                  alt=""
+                  className="pixelated shrink-0 w-3.5 h-3.5"
+                />
                 <span className="truncate">All Directories</span>
               </span>
               <span className="text-[10px] text-[#64748b]">
@@ -744,7 +925,11 @@ export default function App() {
                 >
                   <span className="flex items-center gap-1 truncate">
                     <ChevronRight className={`w-2.5 h-2.5 ${isSel ? 'text-[#38bdf8]' : 'text-[#64748b]'} shrink-0`} />
-                    <Folder className="w-3 h-3 text-[#64748b] shrink-0" />
+                    <img
+                      src={`${getBaseUrl()}icons/directory_closed-4.png`}
+                      alt=""
+                      className="pixelated shrink-0 w-3.5 h-3.5"
+                    />
                     <span className="truncate">{displayName}</span>
                   </span>
                   <span className="text-[10px] text-[#64748b] shrink-0 ml-1">{count}</span>
@@ -829,7 +1014,7 @@ export default function App() {
           {/* Split: Table Column + Right Inspector / Viewport */}
           <div className="flex-1 min-h-0 flex overflow-hidden">
             {/* High-Density Archive Entry Table (5-column layout per spec) */}
-            <section className="w-[440px] 2xl:w-[500px] shrink-0 border-r border-[#182232] flex flex-col bg-[#090d14] min-h-0 h-full overflow-hidden select-none">
+            <section className="w-[480px] 2xl:w-[540px] shrink-0 border-r border-[#182232] flex flex-col bg-[#090d14] min-h-0 h-full overflow-hidden select-none">
               {/* Search Strip */}
               <div className="h-[26px] shrink-0 px-2 bg-[#06090f] border-b border-[#182232] flex items-center justify-between gap-1.5">
                 <div className="relative flex-1">
@@ -851,29 +1036,29 @@ export default function App() {
                 </button>
               </div>
 
-              {/* Sticky 22px Header: Entry Path / Lump, Type / Compression, Offset, Size, Action */}
-              <div className="h-[22px] shrink-0 grid grid-cols-12 px-2 bg-[#0c121d] border-b border-[#182232] text-[10px] font-mono uppercase tracking-wider text-[#64748b] items-center">
+              {/* Sticky 22px Header: Entry Path / Lump, Type, Offset, Size, Action */}
+              <div className="h-[22px] shrink-0 flex items-center px-2 bg-[#0c121d] border-b border-[#182232] text-[10px] font-mono uppercase tracking-wider text-[#64748b]">
                 <button
                   type="button"
                   onClick={() => toggleSort('name')}
-                  className="col-span-4 flex items-center gap-1 text-left hover:text-slate-200 truncate"
+                  className="flex-1 min-w-[140px] flex items-center gap-1 text-left hover:text-slate-200 truncate cursor-pointer"
                   title="Sort by Entry Path"
                 >
                   <span>Entry Path / Lump</span>
-                  <ArrowUpDown className="w-2.5 h-2.5 opacity-60" />
+                  <ArrowUpDown className="w-2.5 h-2.5 opacity-60 shrink-0" />
                 </button>
                 <button
                   type="button"
                   onClick={() => toggleSort('category')}
-                  className="col-span-3 flex items-center gap-1 text-left hover:text-slate-200 truncate"
-                  title="Sort by Category / Compression"
+                  className="w-[95px] shrink-0 text-left hover:text-slate-200 truncate pl-1 cursor-pointer"
+                  title="Sort by Category"
                 >
-                  <span>Type / Compression</span>
+                  <span>Type</span>
                 </button>
                 <button
                   type="button"
                   onClick={() => toggleSort('offset')}
-                  className="col-span-2 flex items-center justify-end text-right hover:text-slate-200"
+                  className="w-[82px] shrink-0 text-right hover:text-slate-200 font-mono cursor-pointer"
                   title="Sort by Offset"
                 >
                   <span>Offset</span>
@@ -881,12 +1066,12 @@ export default function App() {
                 <button
                   type="button"
                   onClick={() => toggleSort('size')}
-                  className="col-span-2 flex items-center justify-end text-right hover:text-slate-200"
+                  className="w-[68px] shrink-0 text-right hover:text-slate-200 font-mono pr-2 cursor-pointer"
                   title="Sort by Size"
                 >
                   <span>Size</span>
                 </button>
-                <span className="col-span-1 text-right">Action</span>
+                <span className="w-[58px] shrink-0 text-right">Action</span>
               </div>
 
               {/* Rows (h-[23px] per row, 28-35 rows visible per viewport) */}
@@ -902,13 +1087,19 @@ export default function App() {
                       <div
                         key={entry.id}
                         onClick={() => setSelectedEntryId(entry.id)}
-                        className={`group h-[23px] px-2 grid grid-cols-12 items-center text-[11px] font-mono cursor-pointer border-b border-white/[0.02] even:bg-white/[0.01] hover:bg-cyan-500/10 transition-colors ${
+                        className={`group h-[23px] px-2 flex items-center text-[11px] font-mono cursor-pointer border-b border-white/[0.02] even:bg-white/[0.01] hover:bg-[#38bdf8]/[0.08] transition-colors ${
                           isSelected
                             ? 'bg-[#111a29] text-[#38bdf8] border-l-2 border-l-[#38bdf8]'
                             : 'text-slate-300'
                         }`}
                       >
-                        <div className="col-span-4 pr-1 truncate flex items-center gap-1">
+                        {/* Entry Path / Lump: flex-1 min-w-[140px] truncate */}
+                        <div className="flex-1 min-w-[140px] truncate flex items-center gap-1.5 pr-2">
+                          <img
+                            src={getEntryIconUrl(entry)}
+                            alt=""
+                            className="pixelated shrink-0 w-3.5 h-3.5"
+                          />
                           <span
                             className={`truncate ${
                               isSelected ? 'text-[#38bdf8] font-bold' : 'text-[#e2e8f0]'
@@ -918,32 +1109,36 @@ export default function App() {
                             {entry.name}
                           </span>
                           {entry.isModified && (
-                            <span className="text-amber-400 text-[9px]">*mod</span>
+                            <span className="text-amber-400 text-[9px] shrink-0">*mod</span>
                           )}
                         </div>
 
-                        <div className="col-span-3 pr-1 truncate text-[10px] text-[#64748b]">
-                          <span className="text-slate-400 truncate">{entry.category}</span>
-                          <span className="text-[#475569]"> · </span>
-                          <span className="text-[#38bdf8] truncate">{entry.compressionMethod}</span>
+                        {/* Type: w-[95px] shrink-0 truncate */}
+                        <div className="w-[95px] shrink-0 truncate text-[10px] pl-1">
+                          <span className="inline-block px-1 py-0 rounded-[2px] bg-black/40 border border-white/10 text-slate-300 font-semibold text-[9px] tracking-wide">
+                            {getCompactTypeTag(entry)}
+                          </span>
                         </div>
 
-                        <div className="col-span-2 text-right text-[#64748b] tabular-nums text-[10px]">
+                        {/* Offset: w-[82px] shrink-0 text-right font-mono */}
+                        <div className="w-[82px] shrink-0 text-right text-[#64748b] tabular-nums text-[10px] font-mono">
                           {toHex(entry.offset, 6)}
                         </div>
 
-                        <div className="col-span-2 text-right text-[#cbd5e1] tabular-nums text-[10px]">
+                        {/* Size: w-[68px] shrink-0 text-right font-mono pr-2 */}
+                        <div className="w-[68px] shrink-0 text-right text-[#cbd5e1] tabular-nums text-[10px] font-mono pr-2">
                           {formatBytes(entry.uncompressedSize)}
                         </div>
 
-                        <div className="col-span-1 flex justify-end">
+                        {/* Action: w-[58px] shrink-0 text-right */}
+                        <div className="w-[58px] shrink-0 text-right">
                           <button
                             type="button"
                             onClick={(e) => {
                               e.stopPropagation();
                               handleDownloadSingle(entry);
                             }}
-                            className="opacity-30 group-hover:opacity-100 px-1.5 py-0 bg-[#111a29] border border-slate-700 hover:border-cyan-400 text-[10px] text-slate-300"
+                            className="hidden group-hover:inline-block px-1.5 py-0 bg-[#111a29] border border-slate-700 hover:border-[#38bdf8] text-[9px] text-slate-300 cursor-pointer"
                             title={`Extract ${entry.name}`}
                           >
                             [Extract]
@@ -959,16 +1154,16 @@ export default function App() {
             {/* Right Center Column: IDE Dock Tabs & Active Viewport */}
             <section className="flex-1 min-w-0 flex flex-col bg-[#080b11] min-h-0 h-full overflow-hidden">
               {/* Rectangular IDE Dock Tabs */}
-              <div className="h-[28px] shrink-0 bg-[#06090f] border-b border-[#182232] flex items-center justify-between select-none">
-                <div className="flex items-center h-full">
+              <div className="h-[28px] shrink-0 bg-[#06090f] border-b border-[#182232] flex items-center justify-between select-none overflow-x-auto no-scrollbar">
+                <div className="flex items-center h-full shrink-0">
                   {(
                     [
-                      ['preview', 'Asset Preview & Editor', FileText],
-                      ['hex', 'Entry Hex View', Binary],
-                      ['archive_hex', 'Raw Container Hex', HardDrive],
-                      ['headers', 'Binary Headers', Layers],
-                      ['zlib', 'Zlib Transcoder', Cpu],
-                      ['formats', 'Supported Formats', Check],
+                      ['preview', 'Preview', FileText],
+                      ['hex', 'Entry Hex', Binary],
+                      ['archive_hex', 'Container Hex', HardDrive],
+                      ['headers', 'Headers', Layers],
+                      ['zlib', 'Zlib', Cpu],
+                      ['formats', 'Formats', Check],
                     ] as Array<[InspectorDockTab, string, any]>
                   ).map(([id, label, Icon]) => {
                     const active = activeDockTab === id;
@@ -977,13 +1172,13 @@ export default function App() {
                         key={id}
                         type="button"
                         onClick={() => setActiveDockTab(id)}
-                        className={`h-full px-3 text-[11px] font-mono flex items-center gap-1.5 transition-colors cursor-pointer border-r border-[#182232] ${
+                        className={`h-full px-3 text-[11px] font-mono whitespace-nowrap shrink-0 flex items-center gap-1.5 transition-colors cursor-pointer border-r border-[#182232] ${
                           active
                             ? 'text-white bg-[#090d14] border-t-2 border-t-[#38bdf8]'
                             : 'text-slate-400 hover:bg-[#0c121d] hover:text-slate-200'
                         }`}
                       >
-                        <Icon className="h-3 w-3" />
+                        <Icon className="h-3 w-3 shrink-0" />
                         <span>{label}</span>
                       </button>
                     );
@@ -1206,7 +1401,7 @@ export default function App() {
       {/* ============================================================== */}
       {/* ZONE E: Global Footer Status Bar (h-[22px])                    */}
       {/* ============================================================== */}
-      <footer className="h-[22px] shrink-0 bg-[#05070b] border-t border-[#182232] px-3 flex items-center justify-between text-[10px] font-mono text-slate-400 select-none">
+      <footer className="h-[22px] shrink-0 z-20 bg-[#05070b] border-t border-[#182232] px-3 flex items-center justify-between text-[10px] font-mono text-slate-400 select-none">
         <div className="flex items-center gap-2 truncate">
           <span className="inline-flex items-center gap-1.5">
             <span
@@ -1230,10 +1425,63 @@ export default function App() {
 
         <div className="flex items-center gap-2 shrink-0">
           <span className="text-[#34d399] flex items-center gap-1 font-semibold">
-            ● 100% Local WASM Sandbox (Zero Network I/O)
+            [Sandbox ID: WASM_LOCAL // NO_NET]
           </span>
         </div>
       </footer>
+
+      {/* About Modal */}
+      {showAboutModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4">
+          <div className="w-full max-w-lg bg-[#090d14] border border-[#182232] shadow-2xl overflow-hidden font-mono text-xs">
+            <div className="h-[28px] flex items-center justify-between px-3 bg-[#0c121d] border-b border-[#182232]">
+              <span className="font-bold text-slate-100 uppercase tracking-wider text-[11px]">
+                About Spet's Universal Game File Opener
+              </span>
+              <button
+                type="button"
+                onClick={() => setShowAboutModal(false)}
+                className="text-slate-400 hover:text-white text-xs px-1"
+              >
+                ✕
+              </button>
+            </div>
+            <div className="p-4 space-y-3 bg-[#06090f] text-slate-300 text-[11px]">
+              <div className="flex items-center gap-2">
+                <img
+                  src={`${getBaseUrl()}icons/hard_disk_drive-0.png`}
+                  alt=""
+                  className="pixelated w-5 h-5"
+                />
+                <div>
+                  <div className="font-bold text-white text-xs">Spet's Universal Game File Opener</div>
+                  <div className="text-[10px] text-amber-400">Pure Local WASM Virtual Filesystem & Stream Carver</div>
+                </div>
+              </div>
+              <p className="leading-relaxed text-slate-400">
+                In-browser virtual filesystem inspector and carver supporting 25+ PC and console game engines:
+                Bethesda (BSA/BA2), Ubisoft (FORGE), Rockstar (RPF), Minecraft (JAR), PlayStation (PKG),
+                CRIWARE (AWB/USM/ADX), FromSoftware (BND/DCX), Square Enix (SDAT/PFS), Call of Duty FastFiles (.ff),
+                id Tech (WAD/PAK/PK3), and RFC 1950 Zlib deflated streams.
+              </p>
+              <div className="p-2 border border-[#182232] bg-[#090d14] space-y-1 text-[10px]">
+                <div className="text-slate-400">Security & Isolation: <span className="text-emerald-400 font-semibold">Client-Side Web Workers [WASM Sandbox]</span></div>
+                <div className="text-slate-400">Network Telemetry: <span className="text-emerald-400 font-semibold">Local Memory Only // Zero Network Calls</span></div>
+                <div className="text-slate-400">Supported Platforms: <span className="text-white">Windows / Linux / macOS (Chrome, Edge, Firefox, Safari)</span></div>
+              </div>
+            </div>
+            <div className="h-[32px] px-3 bg-[#0c121d] border-t border-[#182232] flex items-center justify-end">
+              <button
+                type="button"
+                onClick={() => setShowAboutModal(false)}
+                className="h-[22px] px-3 bg-[#111a29] border border-[#182232] hover:border-[#38bdf8] text-white text-[10px]"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Modal for injecting new files or scripts */}
       <ArchiveBuilderModal
