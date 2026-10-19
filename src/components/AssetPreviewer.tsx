@@ -524,7 +524,7 @@ export const AssetPreviewer: React.FC<AssetPreviewerProps> = ({
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-          <div className="lg:col-span-8 grid grid-cols-16 gap-1 p-3 bg-[#06090f] border border-[#182232] rounded-none-none">
+          <div className="lg:col-span-8 grid grid-cols-16 gap-1 p-3 bg-[#06090f] border border-[#182232] rounded-none">
             {Array.from({ length: 256 }).map((_, idx) => {
               const cr = entry.data[idx * 3];
               const cg = entry.data[idx * 3 + 1];
@@ -545,7 +545,7 @@ export const AssetPreviewer: React.FC<AssetPreviewerProps> = ({
             })}
           </div>
 
-          <div className="lg:col-span-4 border border-[#182232] rounded-none-none p-4 bg-[#090d14] space-y-4 font-mono text-xs tabular-nums">
+          <div className="lg:col-span-4 border border-[#182232] rounded-none p-4 bg-[#090d14] space-y-4 font-mono text-xs tabular-nums">
             <div className="flex items-center gap-3">
               <div
                 className="w-12 h-12 rounded-none border border-[#182232] shrink-0"
@@ -617,7 +617,7 @@ export const AssetPreviewer: React.FC<AssetPreviewerProps> = ({
           </div>
         </div>
 
-        <div className="flex flex-col items-center justify-center p-8 bg-[#06090f] border border-[#182232] rounded-none-none">
+        <div className="flex flex-col items-center justify-center p-8 bg-[#06090f] border border-[#182232] rounded-none">
           <canvas
             ref={flatCanvasRef}
             width={64}
@@ -658,7 +658,7 @@ export const AssetPreviewer: React.FC<AssetPreviewerProps> = ({
           </div>
         </div>
 
-        <div className="flex items-center justify-center bg-[#06090f] border border-[#182232] rounded-none-none p-4">
+        <div className="flex items-center justify-center bg-[#06090f] border border-[#182232] rounded-none p-4">
           <canvas
             ref={mapCanvasRef}
             width={680}
@@ -704,7 +704,7 @@ export const AssetPreviewer: React.FC<AssetPreviewerProps> = ({
           </div>
         </div>
 
-        <div className="p-4 bg-[#06090f] border border-[#182232] rounded-none-none">
+        <div className="p-4 bg-[#06090f] border border-[#182232] rounded-none">
           <canvas ref={waveCanvasRef} width={720} height={180} className="w-full h-44" />
         </div>
       </div>
@@ -743,7 +743,7 @@ export const AssetPreviewer: React.FC<AssetPreviewerProps> = ({
 
         {/* Video Metadata Cards */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-          <div className="p-3 bg-[#0c121d] border border-[#182232] rounded-none-none">
+          <div className="p-3 bg-[#0c121d] border border-[#182232] rounded-none">
             <div className="text-[10px] uppercase font-mono tracking-wider text-slate-500">Resolution</div>
             <div className="text-base font-semibold font-mono text-slate-200 mt-0.5">
               {info.width} × {info.height}
@@ -753,7 +753,7 @@ export const AssetPreviewer: React.FC<AssetPreviewerProps> = ({
             </div>
           </div>
 
-          <div className="p-3 bg-[#0c121d] border border-[#182232] rounded-none-none">
+          <div className="p-3 bg-[#0c121d] border border-[#182232] rounded-none">
             <div className="text-[10px] uppercase font-mono tracking-wider text-slate-500">Framerate & Speed</div>
             <div className="text-base font-semibold font-mono text-amber-400 mt-0.5">
               {info.fps.toFixed(2)} FPS
@@ -763,7 +763,7 @@ export const AssetPreviewer: React.FC<AssetPreviewerProps> = ({
             </div>
           </div>
 
-          <div className="p-3 bg-[#0c121d] border border-[#182232] rounded-none-none">
+          <div className="p-3 bg-[#0c121d] border border-[#182232] rounded-none">
             <div className="text-[10px] uppercase font-mono tracking-wider text-slate-500">Duration & Frames</div>
             <div className="text-base font-semibold font-mono text-slate-200 mt-0.5">
               {Math.floor(info.durationSeconds / 60)}m {(info.durationSeconds % 60).toFixed(1)}s
@@ -773,7 +773,7 @@ export const AssetPreviewer: React.FC<AssetPreviewerProps> = ({
             </div>
           </div>
 
-          <div className="p-3 bg-[#0c121d] border border-[#182232] rounded-none-none">
+          <div className="p-3 bg-[#0c121d] border border-[#182232] rounded-none">
             <div className="text-[10px] uppercase font-mono tracking-wider text-slate-500">Audio Channels</div>
             <div className="text-base font-semibold font-mono text-slate-200 mt-0.5">
               {info.audioTracks?.length || 0} Track(s)
@@ -786,7 +786,7 @@ export const AssetPreviewer: React.FC<AssetPreviewerProps> = ({
 
         {/* Audio Track Breakdown */}
         {info.audioTracks && info.audioTracks.length > 0 && (
-          <div className="p-4 bg-[#06090f] border border-[#182232] rounded-none-none space-y-2">
+          <div className="p-4 bg-[#06090f] border border-[#182232] rounded-none space-y-2">
             <div className="flex items-center gap-2 text-xs font-semibold text-slate-300">
               <Volume2 className="w-3.5 h-3.5 text-amber-400" />
               <span>Embedded Audio Streams</span>
@@ -806,7 +806,7 @@ export const AssetPreviewer: React.FC<AssetPreviewerProps> = ({
         )}
 
         {/* Frame Seek Timeline Visualizer */}
-        <div className="p-4 bg-[#06090f] border border-[#182232] rounded-none-none space-y-3">
+        <div className="p-4 bg-[#06090f] border border-[#182232] rounded-none space-y-3">
           <div className="flex items-center justify-between">
             <div className="text-xs font-semibold text-slate-300 flex items-center gap-2">
               <Film className="w-3.5 h-3.5 text-amber-400" />
@@ -833,7 +833,7 @@ export const AssetPreviewer: React.FC<AssetPreviewerProps> = ({
                   type="button"
                   onClick={() => setSelectedFrameIdx(f.frameIndex)}
                   title={`Frame #${f.frameIndex}: ${f.size.toLocaleString()} B (${f.isKeyframe ? 'KEYFRAME' : 'Delta'})`}
-                  className={`w-2 min-w-[6px] rounded-none-none transition-all ${
+                  className={`w-2 min-w-[6px] rounded-none transition-all ${
                     f.isKeyframe
                       ? isSelected ? 'bg-amber-300' : 'bg-amber-500 hover:bg-amber-400'
                       : isSelected ? 'bg-slate-300' : 'bg-slate-700 hover:bg-slate-600'
@@ -863,7 +863,7 @@ export const AssetPreviewer: React.FC<AssetPreviewerProps> = ({
         </div>
 
         {/* Seek Table Dump */}
-        <div className="p-4 bg-[#06090f] border border-[#182232] rounded-none-none space-y-2">
+        <div className="p-4 bg-[#06090f] border border-[#182232] rounded-none space-y-2">
           <div className="text-xs font-semibold text-slate-300">Timeline Seek Table Header Report</div>
           <pre className="p-3 bg-[#06090f] text-slate-300 font-mono text-xs rounded-none border border-[#182232] max-h-56 overflow-y-auto leading-5 select-text">
             {timelineText}
@@ -920,7 +920,7 @@ export const AssetPreviewer: React.FC<AssetPreviewerProps> = ({
         </div>
 
         {/* PS1 Texture Canvas */}
-        <div className="flex items-center justify-center p-8 bg-[#06090f] border border-[#182232] rounded-none-none overflow-auto min-h-[220px]">
+        <div className="flex items-center justify-center p-8 bg-[#06090f] border border-[#182232] rounded-none overflow-auto min-h-[220px]">
           <canvas
             ref={timCanvasRef}
             className="border border-[#182232] shadow-2xl image-rendering-pixelated"
@@ -934,7 +934,7 @@ export const AssetPreviewer: React.FC<AssetPreviewerProps> = ({
 
         {/* CLUT Palette Swatches */}
         {ps1Tim.paletteColorsRgba.length > 0 && (
-          <div className="p-4 bg-[#06090f] border border-[#182232] rounded-none-none space-y-2">
+          <div className="p-4 bg-[#06090f] border border-[#182232] rounded-none space-y-2">
             <div className="flex items-center justify-between">
               <div className="text-xs font-semibold text-slate-300 flex items-center gap-2">
                 <Palette className="w-3.5 h-3.5 text-amber-400" />
@@ -1007,7 +1007,7 @@ export const AssetPreviewer: React.FC<AssetPreviewerProps> = ({
           </div>
         </div>
 
-        <div className="flex items-center justify-center p-8 bg-[#06090f] border border-[#182232] rounded-none-none min-h-[220px]">
+        <div className="flex items-center justify-center p-8 bg-[#06090f] border border-[#182232] rounded-none min-h-[220px]">
           <canvas
             ref={ndsCanvasRef}
             className="border-2 border-[#182232] shadow-2xl rounded-none"
@@ -1053,19 +1053,19 @@ export const AssetPreviewer: React.FC<AssetPreviewerProps> = ({
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-          <div className="p-3 bg-[#0c121d] border border-[#182232] rounded-none-none">
+          <div className="p-3 bg-[#0c121d] border border-[#182232] rounded-none">
             <div className="text-[10px] uppercase font-mono tracking-wider text-slate-500">Sub-Meshes</div>
             <div className="text-lg font-semibold font-mono text-amber-400 mt-0.5">
               {bmodelMesh.meshes.length}
             </div>
           </div>
-          <div className="p-3 bg-[#0c121d] border border-[#182232] rounded-none-none">
+          <div className="p-3 bg-[#0c121d] border border-[#182232] rounded-none">
             <div className="text-[10px] uppercase font-mono tracking-wider text-slate-500">Total Vertices</div>
             <div className="text-lg font-semibold font-mono text-slate-200 mt-0.5">
               {bmodelMesh.meshes.reduce((acc, m) => acc + m.vertexCount, 0).toLocaleString()}
             </div>
           </div>
-          <div className="p-3 bg-[#0c121d] border border-[#182232] rounded-none-none">
+          <div className="p-3 bg-[#0c121d] border border-[#182232] rounded-none">
             <div className="text-[10px] uppercase font-mono tracking-wider text-slate-500">Total Faces</div>
             <div className="text-lg font-semibold font-mono text-slate-200 mt-0.5">
               {bmodelMesh.meshes.reduce((acc, m) => acc + m.faceCount, 0).toLocaleString()}
@@ -1073,7 +1073,7 @@ export const AssetPreviewer: React.FC<AssetPreviewerProps> = ({
           </div>
         </div>
 
-        <div className="p-4 bg-[#06090f] border border-[#182232] rounded-none-none space-y-3">
+        <div className="p-4 bg-[#06090f] border border-[#182232] rounded-none space-y-3">
           <div className="text-xs font-semibold text-slate-300 flex items-center gap-2">
             <Box className="w-3.5 h-3.5 text-amber-400" />
             <span>Indexed Sub-Meshes & Material Bindings</span>
@@ -1138,25 +1138,25 @@ export const AssetPreviewer: React.FC<AssetPreviewerProps> = ({
         </div>
 
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-          <div className="p-3 bg-[#0c121d] border border-[#182232] rounded-none-none">
+          <div className="p-3 bg-[#0c121d] border border-[#182232] rounded-none">
             <div className="text-[10px] uppercase font-mono tracking-wider text-slate-500">Title ID</div>
             <div className="text-base font-semibold font-mono text-emerald-400 mt-0.5">
               0x{extra.titleId || '415608C3'}
             </div>
           </div>
-          <div className="p-3 bg-[#0c121d] border border-[#182232] rounded-none-none">
+          <div className="p-3 bg-[#0c121d] border border-[#182232] rounded-none">
             <div className="text-[10px] uppercase font-mono tracking-wider text-slate-500">Original PE</div>
             <div className="text-base font-semibold font-mono text-slate-200 mt-0.5 truncate">
               {extra.originalPeName || 'default.exe'}
             </div>
           </div>
-          <div className="p-3 bg-[#0c121d] border border-[#182232] rounded-none-none">
+          <div className="p-3 bg-[#0c121d] border border-[#182232] rounded-none">
             <div className="text-[10px] uppercase font-mono tracking-wider text-slate-500">Entry Point</div>
             <div className="text-base font-semibold font-mono text-slate-200 mt-0.5">
               {extra.entryPoint || '0x82000000'}
             </div>
           </div>
-          <div className="p-3 bg-[#0c121d] border border-[#182232] rounded-none-none">
+          <div className="p-3 bg-[#0c121d] border border-[#182232] rounded-none">
             <div className="text-[10px] uppercase font-mono tracking-wider text-slate-500">Base Address</div>
             <div className="text-base font-semibold font-mono text-slate-200 mt-0.5">
               {extra.baseAddress || '0x82000000'}
@@ -1165,7 +1165,7 @@ export const AssetPreviewer: React.FC<AssetPreviewerProps> = ({
         </div>
 
         {extra.staticLibraries && extra.staticLibraries.length > 0 && (
-          <div className="p-4 bg-[#06090f] border border-[#182232] rounded-none-none space-y-2">
+          <div className="p-4 bg-[#06090f] border border-[#182232] rounded-none space-y-2">
             <div className="text-xs font-semibold text-slate-300 flex items-center gap-2">
               <Layers className="w-3.5 h-3.5 text-emerald-400" />
               <span>Linked Xbox 360 SDK Static Libraries ({extra.staticLibraries.length})</span>
@@ -1184,7 +1184,7 @@ export const AssetPreviewer: React.FC<AssetPreviewerProps> = ({
           </div>
         )}
 
-        <div className="p-4 bg-[#06090f] border border-[#182232] rounded-none-none space-y-3">
+        <div className="p-4 bg-[#06090f] border border-[#182232] rounded-none space-y-3">
           <div className="text-xs font-semibold text-slate-300 flex items-center gap-2">
             <Layers className="w-3.5 h-3.5 text-emerald-400" />
             <span>Virtual Executable Payload & PE Sections ({xexInfo.entries.length} Components)</span>
@@ -1213,7 +1213,7 @@ export const AssetPreviewer: React.FC<AssetPreviewerProps> = ({
           </div>
         </div>
 
-        <div className="p-4 bg-[#06090f] border border-[#182232] rounded-none-none space-y-3">
+        <div className="p-4 bg-[#06090f] border border-[#182232] rounded-none space-y-3">
           <div className="text-xs font-semibold text-slate-300 flex items-center gap-2">
             <Terminal className="w-3.5 h-3.5 text-emerald-400" />
             <span>XEX2 Descriptors & Security Certificate</span>
@@ -1262,19 +1262,19 @@ export const AssetPreviewer: React.FC<AssetPreviewerProps> = ({
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-          <div className="p-3 bg-[#0c121d] border border-[#182232] rounded-none-none">
+          <div className="p-3 bg-[#0c121d] border border-[#182232] rounded-none">
             <div className="text-[10px] uppercase font-mono tracking-wider text-slate-500">Game Title</div>
             <div className="text-base font-semibold font-mono text-cyan-400 mt-0.5">
               {gdkConfigInfo.displayName || 'Call of Duty: Modern Warfare'}
             </div>
           </div>
-          <div className="p-3 bg-[#0c121d] border border-[#182232] rounded-none-none">
+          <div className="p-3 bg-[#0c121d] border border-[#182232] rounded-none">
             <div className="text-[10px] uppercase font-mono tracking-wider text-slate-500">Xbox Title ID</div>
             <div className="text-base font-semibold font-mono text-slate-200 mt-0.5">
               0x{gdkConfigInfo.titleId?.toUpperCase() || '415608E4'}
             </div>
           </div>
-          <div className="p-3 bg-[#0c121d] border border-[#182232] rounded-none-none">
+          <div className="p-3 bg-[#0c121d] border border-[#182232] rounded-none">
             <div className="text-[10px] uppercase font-mono tracking-wider text-slate-500">Target Generation</div>
             <div className="text-base font-semibold font-mono text-emerald-400 mt-0.5">
               {gdkConfigInfo.targetPlatform || 'Xbox Series X|S (Scarlett)'}
@@ -1282,7 +1282,7 @@ export const AssetPreviewer: React.FC<AssetPreviewerProps> = ({
           </div>
         </div>
 
-        <div className="p-4 bg-[#06090f] border border-[#182232] rounded-none-none space-y-3">
+        <div className="p-4 bg-[#06090f] border border-[#182232] rounded-none space-y-3">
           <div className="text-xs font-semibold text-slate-300 flex items-center gap-2">
             <Layers className="w-3.5 h-3.5 text-cyan-400" />
             <span>Registered Executables</span>
@@ -1297,7 +1297,7 @@ export const AssetPreviewer: React.FC<AssetPreviewerProps> = ({
           </div>
         </div>
 
-        <div className="p-4 bg-[#06090f] border border-[#182232] rounded-none-none space-y-2">
+        <div className="p-4 bg-[#06090f] border border-[#182232] rounded-none space-y-2">
           <div className="text-xs font-semibold text-slate-300">Raw MicrosoftGame.config XML</div>
           <pre className="p-3 bg-[#0c121d] text-slate-300 font-mono text-xs rounded-none border border-[#182232] max-h-56 overflow-y-auto leading-5 select-text">
             {new TextDecoder('utf-8', { fatal: false }).decode(entry.data)}
@@ -1338,19 +1338,19 @@ export const AssetPreviewer: React.FC<AssetPreviewerProps> = ({
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-          <div className="p-3 bg-[#0c121d] border border-[#182232] rounded-none-none">
+          <div className="p-3 bg-[#0c121d] border border-[#182232] rounded-none">
             <div className="text-[10px] uppercase font-mono tracking-wider text-slate-500">Package Name</div>
             <div className="text-sm font-semibold font-mono text-indigo-400 mt-0.5 truncate">
               {appxManifestInfo.packageName}
             </div>
           </div>
-          <div className="p-3 bg-[#0c121d] border border-[#182232] rounded-none-none">
+          <div className="p-3 bg-[#0c121d] border border-[#182232] rounded-none">
             <div className="text-[10px] uppercase font-mono tracking-wider text-slate-500">Device Family</div>
             <div className="text-sm font-semibold font-mono text-slate-200 mt-0.5">
               {appxManifestInfo.targetDeviceFamily || 'Windows.Xbox'}
             </div>
           </div>
-          <div className="p-3 bg-[#0c121d] border border-[#182232] rounded-none-none">
+          <div className="p-3 bg-[#0c121d] border border-[#182232] rounded-none">
             <div className="text-[10px] uppercase font-mono tracking-wider text-slate-500">Entry Binary</div>
             <div className="text-sm font-semibold font-mono text-emerald-400 mt-0.5">
               {appxManifestInfo.executable || 'App.exe'}
@@ -1358,7 +1358,7 @@ export const AssetPreviewer: React.FC<AssetPreviewerProps> = ({
           </div>
         </div>
 
-        <div className="p-4 bg-[#06090f] border border-[#182232] rounded-none-none space-y-2">
+        <div className="p-4 bg-[#06090f] border border-[#182232] rounded-none space-y-2">
           <div className="text-xs font-semibold text-slate-300">Raw AppxManifest.xml</div>
           <pre className="p-3 bg-[#0c121d] text-slate-300 font-mono text-xs rounded-none border border-[#182232] max-h-56 overflow-y-auto leading-5 select-text">
             {new TextDecoder('utf-8', { fatal: false }).decode(entry.data)}
@@ -1386,7 +1386,7 @@ export const AssetPreviewer: React.FC<AssetPreviewerProps> = ({
             <span>Extract Image</span>
           </button>
         </div>
-        <div className="flex items-center justify-center p-6 bg-[#06090f] border border-[#182232] rounded-none-none">
+        <div className="flex items-center justify-center p-6 bg-[#06090f] border border-[#182232] rounded-none">
           <img
             src={imageBlobUrl}
             alt={entry.name}

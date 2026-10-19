@@ -639,6 +639,7 @@ export default function App() {
         </span>
         {SAMPLE_ARCHIVES.map((sample) => {
           const active = activePresetId === sample.id;
+          const engineTag = sample.formatBadge.split(' ')[0].replace(/[\(\)]/g, '');
           return (
             <button
               key={sample.id}
@@ -652,7 +653,7 @@ export default function App() {
               }`}
               title={`${sample.title} (${sample.formatBadge})`}
             >
-              <span>[{sample.fileName}]</span>
+              <span>[{sample.fileName} · {engineTag}]</span>
             </button>
           );
         })}
@@ -726,22 +727,27 @@ export default function App() {
 
             {folders.map(([folderName, count]) => {
               const isSel = selectedFolder === folderName;
+              const depth = folderName === '(root)' ? 0 : Math.max(0, folderName.split('/').length - 1);
+              const displayName = folderName === '(root)' ? '(root)' : folderName.split('/').pop() || folderName;
               return (
                 <button
                   key={folderName}
                   type="button"
                   onClick={() => setSelectedFolder(folderName)}
-                  className={`w-full h-[20px] px-2 flex items-center justify-between text-[11px] font-mono cursor-pointer transition-colors ${
+                  style={{ paddingLeft: `${8 + depth * 10}px` }}
+                  className={`w-full h-[20px] pr-2 flex items-center justify-between text-[11px] font-mono cursor-pointer transition-colors ${
                     isSel
                       ? 'bg-[#111a29] text-[#38bdf8] border-l-2 border-l-[#38bdf8] font-semibold'
                       : 'text-slate-400 hover:bg-[#38bdf8]/[0.08] hover:text-slate-200'
                   }`}
+                  title={folderName}
                 >
-                  <span className="flex items-center gap-1.5 truncate">
+                  <span className="flex items-center gap-1 truncate">
+                    <ChevronRight className={`w-2.5 h-2.5 ${isSel ? 'text-[#38bdf8]' : 'text-[#64748b]'} shrink-0`} />
                     <Folder className="w-3 h-3 text-[#64748b] shrink-0" />
-                    <span className="truncate">{folderName}</span>
+                    <span className="truncate">{displayName}</span>
                   </span>
-                  <span className="text-[10px] text-[#64748b]">{count}</span>
+                  <span className="text-[10px] text-[#64748b] shrink-0 ml-1">{count}</span>
                 </button>
               );
             })}
@@ -822,8 +828,8 @@ export default function App() {
 
           {/* Split: Table Column + Right Inspector / Viewport */}
           <div className="flex-1 min-h-0 flex overflow-hidden">
-            {/* High-Density Archive Entry Table */}
-            <section className="w-[360px] 2xl:w-[420px] shrink-0 border-r border-[#182232] flex flex-col bg-[#090d14] min-h-0 h-full overflow-hidden select-none">
+            {/* High-Density Archive Entry Table (5-column layout per spec) */}
+            <section className="w-[440px] 2xl:w-[500px] shrink-0 border-r border-[#182232] flex flex-col bg-[#090d14] min-h-0 h-full overflow-hidden select-none">
               {/* Search Strip */}
               <div className="h-[26px] shrink-0 px-2 bg-[#06090f] border-b border-[#182232] flex items-center justify-between gap-1.5">
                 <div className="relative flex-1">
@@ -845,20 +851,30 @@ export default function App() {
                 </button>
               </div>
 
-              {/* Sticky 22px Header */}
+              {/* Sticky 22px Header: Entry Path / Lump, Type / Compression, Offset, Size, Action */}
               <div className="h-[22px] shrink-0 grid grid-cols-12 px-2 bg-[#0c121d] border-b border-[#182232] text-[10px] font-mono uppercase tracking-wider text-[#64748b] items-center">
                 <button
                   type="button"
                   onClick={() => toggleSort('name')}
-                  className="col-span-6 flex items-center gap-1 text-left hover:text-slate-200 truncate"
+                  className="col-span-4 flex items-center gap-1 text-left hover:text-slate-200 truncate"
+                  title="Sort by Entry Path"
                 >
-                  <span>Entry / Lump</span>
+                  <span>Entry Path / Lump</span>
                   <ArrowUpDown className="w-2.5 h-2.5 opacity-60" />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => toggleSort('category')}
+                  className="col-span-3 flex items-center gap-1 text-left hover:text-slate-200 truncate"
+                  title="Sort by Category / Compression"
+                >
+                  <span>Type / Compression</span>
                 </button>
                 <button
                   type="button"
                   onClick={() => toggleSort('offset')}
                   className="col-span-2 flex items-center justify-end text-right hover:text-slate-200"
+                  title="Sort by Offset"
                 >
                   <span>Offset</span>
                 </button>
@@ -866,16 +882,17 @@ export default function App() {
                   type="button"
                   onClick={() => toggleSort('size')}
                   className="col-span-2 flex items-center justify-end text-right hover:text-slate-200"
+                  title="Sort by Size"
                 >
                   <span>Size</span>
                 </button>
-                <span className="col-span-2 text-right">Action</span>
+                <span className="col-span-1 text-right">Action</span>
               </div>
 
               {/* Rows (h-[23px] per row, 28-35 rows visible per viewport) */}
               <div className="flex-1 min-h-0 overflow-y-auto divide-y divide-[#182232]/30 bg-[#090d14]">
                 {filteredEntries.length === 0 ? (
-                  <div className="p-4 text-center text-[#64748b] text-[11px] font-mono">
+                  <div className="p-3 text-center text-[#64748b] text-[11px] font-mono">
                     No entries matching filter.
                   </div>
                 ) : (
@@ -891,17 +908,24 @@ export default function App() {
                             : 'text-slate-300'
                         }`}
                       >
-                        <div className="col-span-6 pr-1 truncate flex items-center gap-1">
+                        <div className="col-span-4 pr-1 truncate flex items-center gap-1">
                           <span
                             className={`truncate ${
                               isSelected ? 'text-[#38bdf8] font-bold' : 'text-[#e2e8f0]'
                             }`}
+                            title={entry.path || entry.name}
                           >
                             {entry.name}
                           </span>
                           {entry.isModified && (
                             <span className="text-amber-400 text-[9px]">*mod</span>
                           )}
+                        </div>
+
+                        <div className="col-span-3 pr-1 truncate text-[10px] text-[#64748b]">
+                          <span className="text-slate-400 truncate">{entry.category}</span>
+                          <span className="text-[#475569]"> · </span>
+                          <span className="text-[#38bdf8] truncate">{entry.compressionMethod}</span>
                         </div>
 
                         <div className="col-span-2 text-right text-[#64748b] tabular-nums text-[10px]">
@@ -912,7 +936,7 @@ export default function App() {
                           {formatBytes(entry.uncompressedSize)}
                         </div>
 
-                        <div className="col-span-2 flex justify-end">
+                        <div className="col-span-1 flex justify-end">
                           <button
                             type="button"
                             onClick={(e) => {
@@ -922,7 +946,7 @@ export default function App() {
                             className="opacity-30 group-hover:opacity-100 px-1.5 py-0 bg-[#111a29] border border-slate-700 hover:border-cyan-400 text-[10px] text-slate-300"
                             title={`Extract ${entry.name}`}
                           >
-                            Extract
+                            [Extract]
                           </button>
                         </div>
                       </div>
@@ -1022,12 +1046,12 @@ export default function App() {
 
                 {/* BINARY HEADERS */}
                 {activeDockTab === 'headers' && (
-                  <div className="h-full overflow-y-auto p-4 space-y-4 font-mono text-xs">
+                  <div className="h-full overflow-y-auto p-2.5 space-y-2.5 font-mono text-xs">
                     {!archive ? (
-                      <div className="p-8 text-center text-[#64748b]">No archive loaded.</div>
+                      <div className="p-4 text-center text-[#64748b]">No archive loaded.</div>
                     ) : (
                       <>
-                        <div className="border border-[#182232] bg-[#090d14] p-3">
+                        <div className="border border-[#182232] bg-[#090d14] p-2.5">
                           <h3 className="text-xs font-bold text-[#38bdf8] uppercase tracking-wider mb-2">
                             Binary Header Fields ({archive.fileName})
                           </h3>
@@ -1068,8 +1092,8 @@ export default function App() {
 
                 {/* ZLIB TRANSCODER */}
                 {activeDockTab === 'zlib' && (
-                  <div className="h-full overflow-y-auto p-4 space-y-4 font-mono text-xs">
-                    <div className="flex items-center justify-between border-b border-[#182232] pb-2">
+                  <div className="h-full overflow-y-auto p-2.5 space-y-2.5 font-mono text-xs">
+                    <div className="flex items-center justify-between border-b border-[#182232] pb-1.5">
                       <div className="text-xs font-bold text-[#38bdf8] uppercase tracking-wider">
                         RFC 1950 Zlib Stream Transcoder
                       </div>
@@ -1087,7 +1111,7 @@ export default function App() {
                       </div>
                     </div>
 
-                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-2.5">
                       <div className="border border-[#182232] bg-[#090d14] flex flex-col">
                         <div className="h-[24px] px-2.5 bg-[#0c121d] border-b border-[#182232] flex items-center justify-between text-[10px] text-[#64748b]">
                           <span>Input Payload</span>
@@ -1138,7 +1162,7 @@ export default function App() {
 
                 {/* SUPPORTED FORMATS */}
                 {activeDockTab === 'formats' && (
-                  <div className="h-full overflow-y-auto p-4 font-mono text-xs">
+                  <div className="h-full overflow-y-auto p-2.5 font-mono text-xs">
                     <div className="border border-[#182232] bg-[#090d14]">
                       <table className="w-full text-left border-collapse text-[11px]">
                         <thead>
