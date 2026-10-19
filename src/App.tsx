@@ -603,181 +603,179 @@ export default function App() {
             </div>
           </main>
         ) : (
-          <main className="flex-1 grid grid-cols-1 lg:grid-cols-12 min-h-0 overflow-hidden">
+          <main className="flex-1 min-h-0 flex flex-col lg:flex-row overflow-hidden bg-[#09090b]">
             {/* Left Sidebar: Virtual Directory Tree & Repack Controls */}
-            <aside className="lg:col-span-3 xl:col-span-2 border-b lg:border-b-0 lg:border-r border-slate-800/80 bg-[#0D131F] p-4 flex flex-col justify-between gap-6 overflow-y-auto h-full min-h-0">
-            <div className="space-y-5">
-              {/* Archive Summary Block */}
-              <div className="space-y-1.5 pb-4 border-b border-slate-800">
-                <div className="text-xs font-medium text-slate-400">Engine Signature</div>
-                <div className="text-xs font-semibold text-slate-100">{archive.engineFamily}</div>
-                <div className="text-xs font-mono text-slate-400 tabular-nums pt-1">
-                  Magic: <span className="text-amber-300">{archive.magicBytes}</span>
-                </div>
-                {archive.zoneState && (
-                  <div className="text-xs font-mono text-emerald-400 tabular-nums">
-                    Zone: {formatBytes(archive.zoneState.zone.length)} ({archive.zoneState.items.length} XAssets)
+            <aside className="w-full lg:w-56 xl:w-64 shrink-0 border-b lg:border-b-0 lg:border-r border-[#27272a] bg-[#121214] p-3.5 flex flex-col justify-between gap-4 overflow-y-auto h-full min-h-0">
+              <div className="space-y-4">
+                {/* Archive Summary Block */}
+                <div className="space-y-1.5 pb-3 border-b border-[#27272a]">
+                  <div className="text-[11px] font-medium text-zinc-400">Engine Signature</div>
+                  <div className="text-xs font-semibold text-zinc-100">{archive.engineFamily}</div>
+                  <div className="text-xs font-mono text-zinc-400 tabular-nums pt-0.5">
+                    Magic: <span className="text-amber-400">{archive.magicBytes}</span>
                   </div>
-                )}
-              </div>
-
-              {/* Virtual Folder Hierarchy */}
-              <div>
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-xs font-semibold text-slate-300">Virtual Directories</span>
-                  <span className="text-xs font-mono text-slate-500 tabular-nums">{folders.length}</span>
+                  {archive.zoneState && (
+                    <div className="text-xs font-mono text-emerald-400 tabular-nums">
+                      Zone: {formatBytes(archive.zoneState.zone.length)} ({archive.zoneState.items.length} XAssets)
+                    </div>
+                  )}
                 </div>
-                <div className="space-y-0.5 max-h-56 overflow-y-auto pr-1">
-                  <button
-                    type="button"
-                    onClick={() => setSelectedFolder('ALL')}
-                    className={`w-full flex items-center justify-between px-2.5 py-1.5 text-xs rounded transition-colors ${
-                      selectedFolder === 'ALL'
-                        ? 'bg-slate-800 text-amber-300 font-medium'
-                        : 'text-slate-300 hover:bg-slate-800/50'
-                    }`}
-                  >
-                    <span className="flex items-center gap-2 truncate">
-                      <FolderOpen className="w-3.5 h-3.5 text-amber-400 shrink-0" />
-                      <span className="truncate">All Directories</span>
-                    </span>
-                    <span className="font-mono text-slate-400 tabular-nums">{archive.entries.length}</span>
-                  </button>
 
-                  {folders.map(([folderName, count]) => {
-                    const isSel = selectedFolder === folderName;
-                    return (
-                      <button
-                        key={folderName}
-                        type="button"
-                        onClick={() => setSelectedFolder(folderName)}
-                        className={`w-full flex items-center justify-between px-2.5 py-1.5 text-xs rounded transition-colors ${
-                          isSel
-                            ? 'bg-slate-800 text-amber-300 font-medium'
-                            : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50'
-                        }`}
-                      >
-                        <span className="flex items-center gap-2 truncate">
-                          <Folder className="w-3.5 h-3.5 text-slate-500 shrink-0" />
-                          <span className="font-mono truncate">{folderName}</span>
-                        </span>
-                        <span className="font-mono text-slate-500 tabular-nums">{count}</span>
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-
-              {/* Asset Category Filter */}
-              <div>
-                <div className="text-xs font-semibold text-slate-300 mb-2">Asset Type Filter</div>
-                <div className="grid grid-cols-2 gap-1">
-                  {(
-                    [
-                      ['ALL', 'All Types'],
-                      ['executable', 'Executables / XEX'],
-                      ['package', 'Packages / AppX'],
-                      ['script', 'Scripts / GSC'],
-                      ['config', 'Raw / CSV / Loc'],
-                      ['texture', 'Textures / TIM'],
-                      ['video', 'Video / BIK / STR'],
-                      ['audio', 'Audio / SFX'],
-                      ['model', '3D Models / BModel'],
-                      ['map', 'Maps / Geometry'],
-                      ['palette', 'Palettes'],
-                      ['binary', 'Binaries / Payloads'],
-                    ] as const
-                  ).map(([catKey, label]) => (
+                {/* Virtual Folder Hierarchy */}
+                <div>
+                  <div className="flex items-center justify-between mb-1.5">
+                    <span className="text-xs font-semibold text-zinc-300">Virtual Directories</span>
+                    <span className="text-xs font-mono text-zinc-500 tabular-nums">{folders.length}</span>
+                  </div>
+                  <div className="space-y-0.5 max-h-56 overflow-y-auto pr-1">
                     <button
-                      key={catKey}
                       type="button"
-                      onClick={() => setSelectedCategory(catKey)}
-                      className={`px-2.5 py-1.5 text-xs font-medium rounded text-left transition-colors whitespace-nowrap truncate ${
-                        selectedCategory === catKey
-                          ? 'bg-amber-500/15 text-amber-300 border border-amber-500/40'
-                          : 'bg-[#0B0F17] text-slate-400 hover:text-slate-200 border border-slate-800/80'
+                      onClick={() => setSelectedFolder('ALL')}
+                      className={`w-full flex items-center justify-between px-2.5 py-1.5 text-xs rounded-sm transition-colors ${
+                        selectedFolder === 'ALL'
+                          ? 'bg-[#27272a] text-amber-300 font-medium border-l-2 border-amber-400'
+                          : 'text-zinc-300 hover:bg-zinc-800/60'
                       }`}
                     >
-                      {label}
+                      <span className="flex items-center gap-2 truncate">
+                        <FolderOpen className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+                        <span className="truncate">All Directories</span>
+                      </span>
+                      <span className="font-mono text-zinc-400 tabular-nums">{archive.entries.length}</span>
                     </button>
-                  ))}
+
+                    {folders.map(([folderName, count]) => {
+                      const isSel = selectedFolder === folderName;
+                      return (
+                        <button
+                          key={folderName}
+                          type="button"
+                          onClick={() => setSelectedFolder(folderName)}
+                          className={`w-full flex items-center justify-between px-2.5 py-1.5 text-xs rounded-sm transition-colors ${
+                            isSel
+                              ? 'bg-[#27272a] text-amber-300 font-medium border-l-2 border-amber-400'
+                              : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/60'
+                          }`}
+                        >
+                          <span className="flex items-center gap-2 truncate">
+                            <Folder className="w-3.5 h-3.5 text-zinc-500 shrink-0" />
+                            <span className="font-mono truncate">{folderName}</span>
+                          </span>
+                          <span className="font-mono text-zinc-500 tabular-nums">{count}</span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* Asset Category Filter */}
+                <div>
+                  <div className="text-xs font-semibold text-zinc-300 mb-1.5">Asset Type Filter</div>
+                  <div className="grid grid-cols-2 gap-1">
+                    {(
+                      [
+                        ['ALL', 'All Types'],
+                        ['executable', 'Executables'],
+                        ['package', 'Packages'],
+                        ['script', 'Scripts / GSC'],
+                        ['config', 'Raw / CSV / Loc'],
+                        ['texture', 'Textures / TIM'],
+                        ['video', 'Video / BIK / STR'],
+                        ['audio', 'Audio / SFX'],
+                        ['model', '3D Models'],
+                        ['map', 'Maps / Geometry'],
+                        ['palette', 'Palettes'],
+                        ['binary', 'Binaries / Payloads'],
+                      ] as const
+                    ).map(([catKey, label]) => (
+                      <button
+                        key={catKey}
+                        type="button"
+                        onClick={() => setSelectedCategory(catKey)}
+                        className={`px-2 py-1 text-[11px] font-medium rounded-sm text-left transition-colors whitespace-nowrap truncate ${
+                          selectedCategory === catKey
+                            ? 'bg-amber-500/15 text-amber-300 border border-amber-500/40'
+                            : 'bg-[#18181b] text-zinc-400 hover:text-zinc-200 border border-[#27272a]'
+                        }`}
+                      >
+                        {label}
+                      </button>
+                    ))}
+                  </div>
                 </div>
               </div>
-            </div>
 
-            {/* Archive Modification & Repack Controls */}
-            <div className="space-y-3 pt-4 border-t border-slate-800">
-              <button
-                type="button"
-                onClick={() => setIsInjectModalOpen(true)}
-                className="w-full flex items-center justify-center gap-1.5 px-3 py-2 text-xs font-medium bg-slate-800 hover:bg-slate-700 text-slate-100 rounded border border-slate-700 transition-colors whitespace-nowrap"
-              >
-                <Plus className="w-3.5 h-3.5 text-amber-400" />
-                <span>Inject File / Lump</span>
-              </button>
+              {/* Archive Modification & Repack Controls */}
+              <div className="space-y-2.5 pt-3 border-t border-[#27272a]">
+                <button
+                  type="button"
+                  onClick={() => setIsInjectModalOpen(true)}
+                  className="w-full flex items-center justify-center gap-1.5 px-3 py-1.5 text-xs font-medium bg-[#18181b] hover:bg-zinc-800 text-zinc-200 rounded-sm border border-[#27272a] transition-colors whitespace-nowrap"
+                >
+                  <Plus className="w-3.5 h-3.5 text-amber-400" />
+                  <span>Inject File / Lump</span>
+                </button>
 
-              <div className="space-y-1.5">
-                <label className="block text-xs text-slate-400">Rebuild / Export Container As:</label>
-                <div className="flex items-center gap-1.5">
-                  <select
-                    value={repackTarget}
-                    onChange={(e) =>
-                      setRepackTarget(e.target.value as 'ZIP' | 'PK3' | 'PAK' | 'WAD' | 'FF')
-                    }
-                    className="flex-1 min-w-0 px-2 py-1.5 text-xs font-mono bg-[#0B0F17] border border-slate-700 rounded text-slate-200 focus:outline-none focus:border-amber-500"
-                  >
-                    <option value="FF">.FF (T5/T6 FastFile)</option>
-                    <option value="ZIP">.ZIP (All Assets)</option>
-                    <option value="PK3">.PK3 (id Tech 3)</option>
-                    <option value="PAK">.PAK (Quake PACK)</option>
-                    <option value="WAD">.WAD (DOOM PWAD)</option>
-                  </select>
-                  <button
-                    type="button"
-                    onClick={() => handleRepackAndDownload(repackTarget)}
-                    className="flex items-center gap-1 px-3 py-1.5 text-xs font-semibold bg-amber-500 hover:bg-amber-400 text-slate-950 rounded transition-colors whitespace-nowrap shrink-0"
-                  >
-                    <Download className="w-3.5 h-3.5" />
-                    <span>Save</span>
-                  </button>
+                <div className="space-y-1">
+                  <label className="block text-[11px] text-zinc-400">Rebuild / Export Container As:</label>
+                  <div className="flex items-center gap-1.5">
+                    <select
+                      value={repackTarget}
+                      onChange={(e) =>
+                        setRepackTarget(e.target.value as 'ZIP' | 'PK3' | 'PAK' | 'WAD' | 'FF')
+                      }
+                      className="flex-1 min-w-0 px-2 py-1 text-xs font-mono bg-[#09090b] border border-[#27272a] rounded-sm text-zinc-200 focus:outline-none focus:border-amber-500"
+                    >
+                      <option value="FF">.FF (T5/T6 FastFile)</option>
+                      <option value="ZIP">.ZIP (All Assets)</option>
+                      <option value="PK3">.PK3 (id Tech 3)</option>
+                      <option value="PAK">.PAK (Quake PACK)</option>
+                      <option value="WAD">.WAD (DOOM PWAD)</option>
+                    </select>
+                    <button
+                      type="button"
+                      onClick={() => handleRepackAndDownload(repackTarget)}
+                      className="flex items-center gap-1 px-3 py-1 text-xs font-semibold bg-amber-500 hover:bg-amber-400 text-zinc-950 rounded-sm transition-colors whitespace-nowrap shrink-0"
+                    >
+                      <Download className="w-3.5 h-3.5" />
+                      <span>Save</span>
+                    </button>
+                  </div>
                 </div>
               </div>
-            </div>
-          </aside>
+            </aside>
 
-          {/* Center + Right Split: Virtual File Table & Multi-Mode Asset Inspector */}
-          <div className="lg:col-span-9 xl:col-span-10 grid grid-cols-1 xl:grid-cols-12 min-h-0 h-full overflow-hidden">
-            {/* Middle Column: High-Density Archive Entry Table */}
-            <section className="xl:col-span-5 border-b xl:border-b-0 xl:border-r border-slate-800/80 flex flex-col bg-[#0B0F17] min-h-0 h-full overflow-hidden">
+            {/* Middle Column: High-Density Archive Entry Table with STRICT INDEPENDENT SCROLL */}
+            <section className="w-full lg:w-80 xl:w-96 2xl:w-[440px] shrink-0 border-b lg:border-b-0 lg:border-r border-[#27272a] flex flex-col bg-[#09090b] min-h-0 h-full overflow-hidden">
               {/* Search & Upload Bar */}
-              <div className="p-3 border-b border-slate-800/80 bg-[#0F1623] flex items-center justify-between gap-2">
+              <div className="shrink-0 p-2.5 border-b border-[#27272a] bg-[#121214] flex items-center justify-between gap-2">
                 <div className="relative flex-1">
-                  <Search className="w-3.5 h-3.5 text-slate-500 absolute left-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+                  <Search className="w-3.5 h-3.5 text-zinc-500 absolute left-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
                   <input
                     type="text"
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    placeholder="Filter rawfiles, scripts, CSVs, localize..."
-                    className="w-full pl-8 pr-3 py-1.5 text-xs bg-[#0B0F17] border border-slate-700/80 rounded text-slate-200 placeholder:text-slate-500 focus:outline-none focus:border-amber-500"
+                    placeholder="Filter rawfiles, scripts, CSVs..."
+                    className="w-full pl-8 pr-2.5 py-1 text-xs bg-[#09090b] border border-[#27272a] rounded-sm text-zinc-200 placeholder:text-zinc-500 focus:outline-none focus:border-amber-500"
                   />
                 </div>
                 <button
                   type="button"
                   onClick={() => fileInputRef.current?.click()}
-                  className="flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-medium bg-slate-800 hover:bg-slate-700 text-slate-200 rounded border border-slate-700 transition-colors whitespace-nowrap shrink-0"
+                  className="flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium bg-[#18181b] hover:bg-zinc-800 text-zinc-200 rounded-sm border border-[#27272a] transition-colors whitespace-nowrap shrink-0"
                   title="Open another archive from disk"
                 >
                   <Upload className="w-3.5 h-3.5" />
-                  <span>Load Disk File</span>
+                  <span>Open Disk</span>
                 </button>
               </div>
 
-              {/* Table Header */}
-              <div className="grid grid-cols-12 px-3 py-2 border-b border-slate-800 bg-[#0D131F] text-xs font-medium text-slate-400 select-none">
+              {/* Table Header (Sticky / Shrink-0) */}
+              <div className="shrink-0 grid grid-cols-12 px-3 py-1.5 border-b border-[#27272a] bg-[#18181b] text-[11px] font-semibold text-zinc-400 select-none">
                 <button
                   type="button"
                   onClick={() => toggleSort('name')}
-                  className="col-span-6 flex items-center gap-1 text-left hover:text-slate-200"
+                  className="col-span-6 flex items-center gap-1 text-left hover:text-zinc-200"
                 >
                   <span>Entry Path / Lump</span>
                   <ArrowUpDown className="w-3 h-3 opacity-60" />
@@ -785,25 +783,25 @@ export default function App() {
                 <button
                   type="button"
                   onClick={() => toggleSort('offset')}
-                  className="col-span-2 flex items-center justify-end gap-1 text-right hover:text-slate-200"
+                  className="col-span-2 flex items-center justify-end gap-1 text-right hover:text-zinc-200"
                 >
                   <span>Offset</span>
                 </button>
                 <button
                   type="button"
                   onClick={() => toggleSort('size')}
-                  className="col-span-2 flex items-center justify-end gap-1 text-right hover:text-slate-200"
+                  className="col-span-2 flex items-center justify-end gap-1 text-right hover:text-zinc-200"
                 >
                   <span>Size</span>
                 </button>
                 <span className="col-span-2 text-right">Action</span>
               </div>
 
-              {/* High-Density Entry Rows */}
-              <div className="flex-1 overflow-y-auto divide-y divide-slate-800/50">
+              {/* High-Density Entry Rows (flex-1 min-h-0 overflow-y-auto) */}
+              <div className="flex-1 min-h-0 overflow-y-auto divide-y divide-[#27272a]/60">
                 {filteredEntries.length === 0 ? (
                   <div className="p-8 text-center space-y-3">
-                    <p className="text-xs text-slate-400">
+                    <p className="text-xs text-zinc-400">
                       No entries match the current directory or search filter.
                     </p>
                     <button
@@ -813,7 +811,7 @@ export default function App() {
                         setSelectedCategory('ALL');
                         setSearchQuery('');
                       }}
-                      className="px-3 py-1.5 text-xs font-medium bg-slate-800 hover:bg-slate-700 text-slate-200 rounded transition-colors"
+                      className="px-3 py-1.5 text-xs font-medium bg-[#18181b] hover:bg-zinc-800 text-zinc-200 rounded-sm border border-[#27272a] transition-colors"
                     >
                       Reset Filters
                     </button>
@@ -825,35 +823,35 @@ export default function App() {
                       <div
                         key={entry.id}
                         onClick={() => setSelectedEntryId(entry.id)}
-                        className={`grid grid-cols-12 items-center px-3 py-2 text-xs cursor-pointer transition-colors ${
+                        className={`grid grid-cols-12 items-center px-3 py-1.5 text-xs cursor-pointer transition-colors ${
                           isSelected
-                            ? 'bg-amber-500/15 text-slate-100'
-                            : 'hover:bg-slate-900/80 text-slate-300'
+                            ? 'bg-[#18181b] border-l-2 border-amber-400 text-zinc-100'
+                            : 'hover:bg-zinc-800/50 text-zinc-300'
                         }`}
                       >
                         <div className="col-span-6 pr-2 min-w-0">
                           <div className="font-mono font-medium truncate flex items-center gap-1.5">
                             <span
                               className={
-                                isSelected ? 'text-amber-300 font-semibold' : 'text-slate-200'
+                                isSelected ? 'text-amber-300 font-semibold' : 'text-zinc-200'
                               }
                             >
                               {entry.name}
                             </span>
                             {entry.isModified && (
-                              <span className="text-amber-400 text-[11px]">*modified</span>
+                              <span className="text-amber-400 text-[10px]">*mod</span>
                             )}
                           </div>
-                          <div className="text-[11px] text-slate-500 truncate font-mono">
+                          <div className="text-[10px] text-zinc-500 truncate font-mono">
                             {entry.folder} · {entry.compressionMethod}
                           </div>
                         </div>
 
-                        <div className="col-span-2 text-right font-mono text-slate-400 tabular-nums">
+                        <div className="col-span-2 text-right font-mono text-zinc-400 tabular-nums text-[11px]">
                           {toHex(entry.offset, 6)}
                         </div>
 
-                        <div className="col-span-2 text-right font-mono text-slate-300 tabular-nums">
+                        <div className="col-span-2 text-right font-mono text-zinc-300 tabular-nums text-[11px]">
                           {formatBytes(entry.uncompressedSize)}
                         </div>
 
@@ -864,7 +862,7 @@ export default function App() {
                               e.stopPropagation();
                               handleDownloadSingle(entry);
                             }}
-                            className="px-2 py-1 text-[11px] font-medium text-slate-300 hover:text-slate-950 hover:bg-amber-400 bg-slate-800/90 rounded transition-colors whitespace-nowrap shrink-0"
+                            className="px-2 py-0.5 text-[11px] font-medium text-zinc-300 hover:text-zinc-950 hover:bg-amber-400 bg-[#18181b] border border-[#27272a] rounded-sm transition-colors whitespace-nowrap shrink-0"
                             title={`Extract ${entry.name}`}
                           >
                             Extract
@@ -878,17 +876,17 @@ export default function App() {
             </section>
 
             {/* Right Column: Deep Asset Previewer & Synchronized Hex Inspector */}
-            <section className="xl:col-span-7 flex flex-col bg-[#0B0F17] min-h-0 h-full overflow-hidden">
+            <section className="flex-1 min-w-0 flex flex-col bg-[#09090b] min-h-0 h-full overflow-hidden">
               {/* Inspector Mode Switcher Bar */}
-              <div className="px-4 py-2.5 border-b border-slate-800 bg-[#0F1623] flex flex-wrap items-center justify-between gap-3">
-                <div className="flex items-center gap-1 p-1 bg-[#0B0F17] border border-slate-800 rounded-lg">
+              <div className="shrink-0 px-3 py-1.5 border-b border-[#27272a] bg-[#121214] flex flex-wrap items-center justify-between gap-2">
+                <div className="flex items-center gap-1">
                   <button
                     type="button"
                     onClick={() => setInspectorTab('preview')}
-                    className={`flex items-center gap-1.5 px-3 py-1 text-xs font-medium rounded transition-colors whitespace-nowrap shrink-0 ${
+                    className={`flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium rounded-sm border transition-colors whitespace-nowrap shrink-0 ${
                       inspectorTab === 'preview'
-                        ? 'bg-amber-500 text-slate-950 font-semibold'
-                        : 'text-slate-400 hover:text-slate-200'
+                        ? 'bg-amber-500 text-zinc-950 font-semibold border-amber-500'
+                        : 'border-[#27272a] bg-[#18181b] text-zinc-400 hover:text-zinc-200'
                     }`}
                   >
                     <FileText className="w-3.5 h-3.5" />
@@ -897,10 +895,10 @@ export default function App() {
                   <button
                     type="button"
                     onClick={() => setInspectorTab('hex')}
-                    className={`flex items-center gap-1.5 px-3 py-1 text-xs font-medium rounded transition-colors whitespace-nowrap shrink-0 ${
+                    className={`flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium rounded-sm border transition-colors whitespace-nowrap shrink-0 ${
                       inspectorTab === 'hex'
-                        ? 'bg-amber-500 text-slate-950 font-semibold'
-                        : 'text-slate-400 hover:text-slate-200'
+                        ? 'bg-amber-500 text-zinc-950 font-semibold border-amber-500'
+                        : 'border-[#27272a] bg-[#18181b] text-zinc-400 hover:text-zinc-200'
                     }`}
                   >
                     <Binary className="w-3.5 h-3.5" />
@@ -909,10 +907,10 @@ export default function App() {
                   <button
                     type="button"
                     onClick={() => setInspectorTab('archive_hex')}
-                    className={`flex items-center gap-1.5 px-3 py-1 text-xs font-medium rounded transition-colors whitespace-nowrap shrink-0 ${
+                    className={`flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium rounded-sm border transition-colors whitespace-nowrap shrink-0 ${
                       inspectorTab === 'archive_hex'
-                        ? 'bg-amber-500 text-slate-950 font-semibold'
-                        : 'text-slate-400 hover:text-slate-200'
+                        ? 'bg-amber-500 text-zinc-950 font-semibold border-amber-500'
+                        : 'border-[#27272a] bg-[#18181b] text-zinc-400 hover:text-zinc-200'
                     }`}
                   >
                     <HardDrive className="w-3.5 h-3.5" />
@@ -921,7 +919,7 @@ export default function App() {
                 </div>
 
                 {selectedEntry && (
-                  <div className="text-xs font-mono text-slate-400 tabular-nums">
+                  <div className="text-[11px] font-mono text-zinc-400 tabular-nums">
                     <span>{selectedEntry.compressionMethod}</span>
                     <span aria-hidden="true" className="mx-1.5">·</span>
                     <span>CRC {toHex(selectedEntry.crc32, 8)}</span>
@@ -932,7 +930,7 @@ export default function App() {
               {/* Active Inspector Viewport */}
               <div className="flex-1 min-h-0 overflow-hidden">
                 {!selectedEntry ? (
-                  <div className="h-full flex items-center justify-center text-xs text-slate-500">
+                  <div className="h-full flex items-center justify-center text-xs text-zinc-500">
                     Select an entry from the archive table to inspect its payload.
                   </div>
                 ) : inspectorTab === 'preview' ? (
@@ -957,8 +955,7 @@ export default function App() {
                 )}
               </div>
             </section>
-          </div>
-        </main>
+          </main>
         )
       )}
 

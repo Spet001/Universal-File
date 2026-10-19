@@ -7,11 +7,16 @@
     --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace;
   }
 
+  html, body, #root {
+    height: 100%;
+    max-height: 100%;
+    overflow: hidden;
+  }
+
   body {
     font-family: var(--font-sans);
-    background-color: #0B0F17;
-    color: #F1F5F9;
-    overflow-x: hidden;
+    background-color: #09090b;
+    color: #f4f4f5;
   }
 
   h1, h2, h3, .font-display {
@@ -35,14 +40,14 @@
 }
 
 ::-webkit-scrollbar-track {
-  background: #0B0F17;
+  background: #09090b;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #1E293B;
-  border-radius: 3px;
+  background: #27272a;
+  border-radius: 2px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #334155;
+  background: #3f3f46;
 }

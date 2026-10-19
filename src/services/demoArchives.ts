@@ -117,7 +117,10 @@ export async function fetchPresetBinary(preset: SampleArchivePreset): Promise<Ui
   const candidateUrls = [
     clean,
     './' + clean,
+    'samples/' + preset.fileName,
+    './samples/' + preset.fileName,
     '/tools/universal-file/' + clean,
+    '/tools/universal-file/samples/' + preset.fileName,
     preset.url,
   ];
 
@@ -126,6 +129,8 @@ export async function fetchPresetBinary(preset: SampleArchivePreset): Promise<Ui
     try {
       const res = await fetch(candidate);
       if (res.ok) {
+        const ct = res.headers.get('content-type') || '';
+        if (ct.includes('text/html')) continue;
         const buf = await res.arrayBuffer();
         return new Uint8Array(buf);
       }
