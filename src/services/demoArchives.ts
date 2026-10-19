@@ -110,13 +110,29 @@ export const SAMPLE_ARCHIVES: SampleArchivePreset[] = [
 ];
 
 /**
- * Fetches the binary Uint8Array of an authentic sample preset from public/samples/
+ * Fetches the binary Uint8Array of an authentic sample preset with multi-path resolution
  */
 export async function fetchPresetBinary(preset: SampleArchivePreset): Promise<Uint8Array> {
-  const res = await fetch(preset.url);
-  if (!res.ok) {
-    throw new Error(`Failed to load preset ${preset.fileName}: HTTP ${res.status}`);
+  const clean = preset.url.replace(/^\/+/, '');
+  const candidateUrls = [
+    clean,
+    './' + clean,
+    '/tools/universal-file/' + clean,
+    preset.url,
+  ];
+
+  let lastErr: Error | null = null;
+  for (const candidate of candidateUrls) {
+    try {
+      const res = await fetch(candidate);
+      if (res.ok) {
+        const buf = await res.arrayBuffer();
+        return new Uint8Array(buf);
+      }
+    } catch (e: any) {
+      lastErr = e;
+    }
   }
-  const buf = await res.arrayBuffer();
-  return new Uint8Array(buf);
+
+  throw new Error(`Failed to load preset ${preset.fileName}: ${lastErr?.message || 'Not found'}`);
 }
