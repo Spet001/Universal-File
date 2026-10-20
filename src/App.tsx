@@ -1076,9 +1076,14 @@ export default function App() {
 
               {/* Rows (h-[23px] per row, 28-35 rows visible per viewport) */}
               <div className="flex-1 min-h-0 overflow-y-auto divide-y divide-[#182232]/30 bg-[#090d14]">
-                {filteredEntries.length === 0 ? (
+                {!archive ? (
+                  <div className="p-4 text-center text-[#64748b] text-[11px] font-mono space-y-1.5">
+                    <p className="text-slate-300 font-semibold">Ready to inspect game archives</p>
+                    <p>Drag & drop any archive here, click [Open], or select a Quick Demo above.</p>
+                  </div>
+                ) : filteredEntries.length === 0 ? (
                   <div className="p-3 text-center text-[#64748b] text-[11px] font-mono">
-                    No entries matching filter.
+                    No entries matching current filter query.
                   </div>
                 ) : (
                   filteredEntries.map((entry) => {

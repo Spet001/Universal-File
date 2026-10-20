@@ -3,20 +3,73 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Spet's Universal Game File Opener</title>
-    <meta name="description" content="Universal game archive inspector, decompressor, and extractor supporting Nintendo DS ROMs (.nds NitroFS), Classic ROMs (GBA, N64, SNES, NES), Xbox 360 GOD & XEX, Xbox One/Series/GDK AppX/MSIX, Call of Duty FastFiles (T4-T10 & IW3-IW10), PS1 BIN/CD-XA, Unreal Engine PAK/UAsset, Unity, Final Fantasy XIII white_data, id Tech 6 DOOM 2016, Bink Video (.bik), WAD, PAK, PK3, ISO, PAR, VPK, BIG, and raw zlib streams." />
-    <meta property="og:title" content="Spet's Universal Game File Opener" />
-    <meta property="og:description" content="Universal game archive inspector, decompressor, and extractor supporting Nintendo DS ROMs (.nds NitroFS), Classic ROMs (GBA, N64, SNES, NES), Xbox 360 GOD & XEX, Xbox One/Series/GDK AppX/MSIX, Call of Duty FastFiles (T4-T10 & IW3-IW10), PS1 BIN/CD-XA, Unreal Engine PAK/UAsset, Unity, Final Fantasy XIII white_data, id Tech 6 DOOM 2016, Bink Video (.bik), WAD, PAK, PK3, ISO, PAR, VPK, BIG, and raw zlib streams." />
+    <title>Spet's Universal Game File Opener — Web Reverse Engineering Workbench</title>
+    <meta name="description" content="Universal client-side game archive inspector, decompressor, and extractor running 100% in your browser. Supports 25+ game engines: Nintendo DS ROMs, Classic ROMs, Bethesda BSA/BA2, Call of Duty FastFiles, id Tech WAD, Rockstar RPF, Unreal Engine PAK, and raw zlib streams." />
+    <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
+    <link rel="canonical" href="https://spet01.dev/tools/universal-file/" />
+
     <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://spet01.dev/tools/universal-file/" />
+    <meta property="og:title" content="Spet's Universal Game File Opener" />
+    <meta property="og:description" content="Universal client-side game archive inspector, decompressor, and extractor running 100% in your browser. Zero server uploads." />
+    <meta property="og:image" content="https://spet01.dev/assets/tool_universal_file.png" />
+
     <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:url" content="https://spet01.dev/tools/universal-file/" />
+    <meta name="twitter:title" content="Spet's Universal Game File Opener" />
+    <meta name="twitter:description" content="Universal client-side game archive inspector, decompressor, and extractor running 100% in your browser." />
+    <meta name="twitter:image" content="https://spet01.dev/assets/tool_universal_file.png" />
+
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="icon" type="image/png" href="./icons/hard_disk_drive-0.png" />
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
+
+    <!-- Schema.org JSON-LD -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebApplication",
+      "name": "Spet's Universal Game File Opener",
+      "applicationCategory": "DeveloperApplication",
+      "operatingSystem": "All modern web browsers (WebAssembly)",
+      "url": "https://spet01.dev/tools/universal-file/",
+      "description": "In-browser universal game archive inspector, decompressor, and extractor supporting 25+ game engines (WAD, PAK, PK3, BSA, BA2, RPF, FORGE, FastFiles, NDS ROMs, raw zlib streams) with zero server uploads.",
+      "author": {
+        "@type": "Person",
+        "name": "Eduardo Gelain",
+        "url": "https://spet01.dev"
+      },
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD"
+      }
+    }
+    </script>
   </head>
   <body class="bg-[#06090f] text-[#cbd5e1] antialiased selection:bg-[#38bdf8]/20 selection:text-[#38bdf8]">
-    <div id="root"></div>
+    <div id="root">
+      <header style="padding: 1.5rem; border-bottom: 1px solid #182232; background: #0c121d;">
+        <h1 style="font-size: 1.25rem; font-weight: 700; color: #38bdf8; margin: 0 0 0.5rem 0; font-family: monospace;">Spet's Universal Game File Opener</h1>
+        <p style="font-size: 0.875rem; color: #94a3b8; margin: 0; line-height: 1.5;">Universal in-browser game archive inspector, decompressor, and extractor running 100% locally via WebAssembly.</p>
+      </header>
+      <main style="padding: 1.5rem; max-width: 900px; margin: 0 auto; font-family: monospace; line-height: 1.6; color: #cbd5e1;">
+        <section style="margin-bottom: 1.5rem;">
+          <h2 style="font-size: 1rem; color: #f8fafc; margin-bottom: 0.5rem;">Supported Engine Formats</h2>
+          <p style="font-size: 0.875rem; color: #94a3b8;">Inspect, extract, preview, and repack archives from over 25 game engines with zero server uploads: id Tech (WAD, PAK, PK3), Bethesda Softworks (BSA, BA2), Rockstar Games (RPF), Ubisoft (FORGE), Call of Duty FastFiles (T4-T10 & IW3-IW10), Nintendo DS (NDS NitroFS), Classic ROMs (GBA, N64, SNES, NES), Unreal Engine (PAK/UAsset), Square Enix (white_data), and raw RFC 1950 zlib deflate streams.</p>
+        </section>
+        <section style="margin-bottom: 1.5rem;">
+          <h2 style="font-size: 1rem; color: #f8fafc; margin-bottom: 0.5rem;">Key Capabilities</h2>
+          <ul style="padding-left: 1.25rem; font-size: 0.875rem; color: #94a3b8; list-style: square;">
+            <li>Local-First Zero-Upload Security: All binary parsing executes locally on your CPU via client-side WebAssembly.</li>
+            <li>5-Zone Engineering Workstation: Virtual directory tree, lump table with sorting, integrated Hex viewer, asset previewer (audio, textures, scripts), and binary headers inspector.</li>
+            <li>Interactive Repacking: Rebuild modified game containers and transcode raw zlib streams.</li>
+          </ul>
+        </section>
+        <p style="font-size: 0.75rem; color: #64748b;">Loading interactive workstation interface...</p>
+      </main>
+    </div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
-
