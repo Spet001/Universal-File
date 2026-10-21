@@ -30,6 +30,7 @@ import { isPlaystationPkg, parsePlaystationPkg } from './playstationPkgParser';
 import { isCriwareArchive, parseCriwareArchive } from './criwareParser';
 import { isFromSoftArchive, parseFromSoftArchive } from './fromSoftParser';
 import { isSquareArchive, parseSquareArchive } from './squareParser';
+import { isRenpyArchive, parseRenpyArchive } from './renpyParser';
 
 export const FORMAT_SPECS: FormatSpec[] = [
   {
@@ -373,6 +374,17 @@ export const FORMAT_SPECS: FormatSpec[] = [
     description:
       'Decodes Nintendo DS SDAT audio archives (SSEQ sequences, SBNK instruments, SWAR waveforms) and Square Enix PFS master resource packages.',
   },
+  {
+    id: 'RPA',
+    ext: '.rpa',
+    name: 'Ren\'Py Visual Novel Archive (RPA-2.0 / RPA-3.0)',
+    engines: 'Ren\'Py Visual Novel Engine',
+    magicSignature: '52 50 41 2D 33 2E 30 20 (RPA-3.0) / RPA-2.0',
+    compression: 'Zlib Compressed Pickle Index + 32-bit XOR Obfuscation',
+    canRepack: false,
+    description:
+      'Ren\'Py Visual Novel Engine game asset archive format (RPA-2.0 and RPA-3.0). Decodes Python Pickle index mapping virtual asset paths to offsets, lengths, and prefix buffers with 32-bit XOR obfuscation.',
+  },
 ];
 
 // Standard IEEE 802.3 CRC32 lookup
@@ -464,6 +476,9 @@ export function classifyEntry(path: string, data: Uint8Array): AssetCategory {
     lower.endsWith('.menu') ||
     lower.endsWith('.vision') ||
     lower.endsWith('.lua') ||
+    lower.endsWith('.rpy') ||
+    lower.endsWith('.rpym') ||
+    lower.endsWith('.py') ||
     lower.endsWith('.c') ||
     lower.endsWith('.h') ||
     lower.endsWith('.hlsl') ||
@@ -498,6 +513,7 @@ export function classifyEntry(path: string, data: Uint8Array): AssetCategory {
     lower.endsWith('.png') ||
     lower.endsWith('.jpg') ||
     lower.endsWith('.jpeg') ||
+    lower.endsWith('.webp') ||
     lower.endsWith('.dds') ||
     lower.endsWith('.tga') ||
     lower.endsWith('.bmp') ||
@@ -546,7 +562,8 @@ export function classifyEntry(path: string, data: Uint8Array): AssetCategory {
     lower.endsWith('.appxbundle') ||
     lower.endsWith('.msixbundle') ||
     lower.endsWith('.xvd') ||
-    lower.endsWith('.xvc')
+    lower.endsWith('.xvc') ||
+    lower.endsWith('.rpa')
   ) {
     return 'package';
   }
@@ -1620,6 +1637,11 @@ export function parseGameArchive(fileName: string, bytes: Uint8Array): ParsedArc
     return parseSquareArchive(fileName, bytes, startTime);
   }
 
+  // 0i. Check Ren'Py Archive (.rpa / RPA-3.0 / RPA-2.0)
+  if (isRenpyArchive(bytes, fileName)) {
+    return parseRenpyArchive(fileName, bytes, startTime);
+  }
+
   // 1. Check RAD Game Tools Bink Video (.bik / .bk2)
   if (
     magic4.startsWith('BIK') ||
@@ -1727,6 +1749,7 @@ export function parseGameArchive(fileName: string, bytes: Uint8Array): ParsedArc
     lower.endsWith('.msixbundle') ||
     lower.endsWith('.xvd') ||
     lower.endsWith('.xvc') ||
+    lower.endsWith('.rpa') ||
     lower.endsWith('.eappx') ||
     lower.endsWith('.emsix') ||
     lower.endsWith('.eappxbundle') ||
@@ -1973,3 +1996,5 @@ export function repackArchiveAsFormat(
 
   return { bytes: ffOut, extension: '.ff', mimeType: 'application/octet-stream' };
 }
+
+export { isRenpyArchive, parseRenpyArchive } from './renpyParser';

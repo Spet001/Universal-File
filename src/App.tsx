@@ -418,7 +418,7 @@ export default function App() {
       <input
         ref={fileInputRef}
         type="file"
-        accept=".ff,.zip,.rar,.wad,.pak,.iso,.pk3,.pk4,.iwd,.par,.vpk,.big,.zlib,.dat,.bin,.bsa,.ba2,.forge,.rpf,.jar,.pkg,.awb,.acb,.usm,.adx,.hca,.bnd,.bnd4,.dcx,.sdat,.pfs,*"
+        accept=".ff,.zip,.rar,.wad,.pak,.iso,.pk3,.pk4,.iwd,.par,.vpk,.big,.zlib,.dat,.bin,.bsa,.ba2,.forge,.rpf,.jar,.pkg,.awb,.acb,.usm,.adx,.hca,.bnd,.bnd4,.dcx,.sdat,.pfs,.rpa,*"
         className="hidden"
         onChange={(e) => {
           if (e.target.files && e.target.files[0]) {

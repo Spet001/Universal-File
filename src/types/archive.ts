@@ -32,7 +32,8 @@ export type ArchiveFormatId =
   | 'PKG'
   | 'CRIWARE'
   | 'FROMSOFT'
-  | 'SQUARE';
+  | 'SQUARE'
+  | 'RPA';
 
 export type AssetCategory =
   | 'script'

@@ -107,6 +107,19 @@ export const SAMPLE_ARCHIVES: SampleArchivePreset[] = [
     license: 'GPL-2.0',
     sourceUrl: 'https://github.com/lavenderdotpet/LibreQuake',
   },
+  {
+    id: 'rpa-renpy',
+    fileName: 'sample.rpa',
+    formatBadge: 'Ren\'Py (RPA)',
+    engine: 'Ren\'Py Visual Novel Engine',
+    title: 'Ren\'Py Visual Novel RPA Archive Demo',
+    summary:
+      'Authentic Ren\'Py RPA-3.0 container archive with 32-bit XOR key obfuscation, compressed Pickle index, visual novel script assets (.rpy), and textures.',
+    fileSize: 784,
+    url: '/samples/sample.rpa',
+    license: 'MIT / Open Source',
+    sourceUrl: 'https://www.renpy.org/',
+  },
 ];
 
 /**
