@@ -263,24 +263,79 @@ export const AssetPreviewer: React.FC<AssetPreviewerProps> = ({
     ctx.lineTo(w, h / 2);
     ctx.stroke();
 
-    if (entry.data.length <= 44) return;
-    const view = new DataView(entry.data.buffer, entry.data.byteOffset, entry.data.byteLength);
-    const numSamples = Math.floor((entry.data.length - 44) / 2);
-    const step = Math.max(1, Math.floor(numSamples / w));
+    if (entry.data.length === 0) return;
 
-    ctx.strokeStyle = '#F59E0B';
-    ctx.lineWidth = 1.5;
-    ctx.beginPath();
-    for (let x = 0; x < w; x++) {
-      const sampleIdx = Math.min(numSamples - 1, x * step);
-      const bytePos = 44 + sampleIdx * 2;
-      if (bytePos + 2 > entry.data.length) break;
-      const pcm = view.getInt16(bytePos, true) / 32768;
-      const y = h / 2 - pcm * (h * 0.42);
-      if (x === 0) ctx.moveTo(x, y);
-      else ctx.lineTo(x, y);
+    let isCancelled = false;
+
+    const drawWaveform = (samples: Float32Array | number[]) => {
+      if (isCancelled) return;
+      ctx.clearRect(0, 0, w, h);
+      ctx.strokeStyle = '#1E293B';
+      ctx.beginPath();
+      ctx.moveTo(0, h / 2);
+      ctx.lineTo(w, h / 2);
+      ctx.stroke();
+
+      ctx.strokeStyle = '#F59E0B';
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      const step = Math.max(1, Math.floor(samples.length / w));
+      for (let x = 0; x < w; x++) {
+        const sampleIdx = Math.min(samples.length - 1, x * step);
+        const val = samples[sampleIdx];
+        const clamped = Math.max(-1, Math.min(1, val));
+        const y = h / 2 - clamped * (h * 0.42);
+        if (x === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+      }
+      ctx.stroke();
+    };
+
+    const drawRawPCM = () => {
+      if (entry.data.length <= 44) return;
+      const view = new DataView(entry.data.buffer, entry.data.byteOffset, entry.data.byteLength);
+      const numSamples = Math.floor((entry.data.length - 44) / 2);
+      const step = Math.max(1, Math.floor(numSamples / w));
+      const samples: number[] = [];
+      for (let x = 0; x < w; x++) {
+        const sampleIdx = Math.min(numSamples - 1, x * step);
+        const bytePos = 44 + sampleIdx * 2;
+        if (bytePos + 2 > entry.data.length) break;
+        samples.push(view.getInt16(bytePos, true) / 32768);
+      }
+      drawWaveform(samples);
+    };
+
+    // Attempt true decoded waveform rendering via Web Audio API (for Vorbis, Opus, MP3, WAV)
+    try {
+      const AudioCtxClass = window.AudioContext || (window as any).webkitAudioContext;
+      if (AudioCtxClass) {
+        if (!audioCtxRef.current) {
+          audioCtxRef.current = new AudioCtxClass();
+        }
+        const copyBuffer = entry.data.slice().buffer;
+        audioCtxRef.current.decodeAudioData(copyBuffer).then(
+          (decoded) => {
+            if (isCancelled) return;
+            const channel = decoded.getChannelData(0);
+            drawWaveform(channel);
+          },
+          () => {
+            if (!isCancelled) drawRawPCM();
+          }
+        );
+        return () => {
+          isCancelled = true;
+        };
+      }
+    } catch {
+      // AudioContext unavailable or failed to initialize
     }
-    ctx.stroke();
+
+    drawRawPCM();
+    return () => {
+      isCancelled = true;
+    };
   }, [entry]);
 
   const stopAudio = () => {
@@ -301,10 +356,14 @@ export const AssetPreviewer: React.FC<AssetPreviewerProps> = ({
       return;
     }
     try {
+      const AudioCtxClass = window.AudioContext || (window as any).webkitAudioContext;
       if (!audioCtxRef.current) {
-        audioCtxRef.current = new AudioContext();
+        audioCtxRef.current = new AudioCtxClass();
       }
       const ctx = audioCtxRef.current;
+      if (ctx.state === 'suspended') {
+        await ctx.resume();
+      }
       const copyBuffer = entry.data.slice().buffer;
       const decoded = await ctx.decodeAudioData(copyBuffer);
       const source = ctx.createBufferSource();
@@ -314,7 +373,8 @@ export const AssetPreviewer: React.FC<AssetPreviewerProps> = ({
       audioSourceRef.current = source;
       setIsPlayingAudio(true);
       source.start(0);
-    } catch {
+    } catch (err) {
+      console.error('Audio decode / playback error:', err);
       setIsPlayingAudio(false);
     }
   };
@@ -672,17 +732,38 @@ export const AssetPreviewer: React.FC<AssetPreviewerProps> = ({
 
   // Render Audio Waveform Player
   if (entry.category === 'audio') {
+    const lowerName = entry.name.toLowerCase();
+    const isOgg = lowerName.endsWith('.ogg') || (entry.data.length >= 4 && entry.data[0] === 0x4f && entry.data[1] === 0x67 && entry.data[2] === 0x67 && entry.data[3] === 0x53);
+    const isWav = lowerName.endsWith('.wav') || (entry.data.length >= 4 && entry.data[0] === 0x52 && entry.data[1] === 0x49 && entry.data[2] === 0x46 && entry.data[3] === 0x46);
+    const isMp3 = lowerName.endsWith('.mp3');
+
+    const formatTitle = isOgg
+      ? `Ogg Vorbis Audio Stream (${entry.name})`
+      : isWav
+      ? `RIFF WAVE Audio Stream (${entry.name})`
+      : isMp3
+      ? `MPEG Audio Stream (${entry.name})`
+      : `PCM / Game Audio Stream (${entry.name})`;
+
+    const formatDesc = isOgg
+      ? `Ogg Vorbis compressed audio asset (${formatBytes(entry.uncompressedSize)}). Click Play to audition via Web Audio API.`
+      : isWav
+      ? `RIFF WAVE audio asset (${formatBytes(entry.uncompressedSize)}). Click Play to audition via Web Audio API.`
+      : isMp3
+      ? `MPEG audio stream asset (${formatBytes(entry.uncompressedSize)}). Click Play to audition via Web Audio API.`
+      : `Audio stream asset (${formatBytes(entry.uncompressedSize)}). Click Play to audition via Web Audio API.`;
+
+    const exportExt = entry.name.includes('.') ? entry.name.split('.').pop()?.toUpperCase() : (isOgg ? 'OGG' : isWav ? 'WAV' : 'AUDIO');
+
     return (
       <div className="p-5 space-y-5 overflow-y-auto h-full">
         <div className="flex flex-wrap items-center justify-between gap-4 pb-4 border-b border-[#182232]">
           <div>
             <div className="flex items-center gap-2">
               <Volume2 className="w-4 h-4 text-amber-400" />
-              <h3 className="text-sm font-semibold text-slate-100">PCM / Game Audio Stream ({entry.name})</h3>
+              <h3 className="text-sm font-semibold text-slate-100">{formatTitle}</h3>
             </div>
-            <p className="text-xs text-slate-400 mt-0.5">
-              RIFF WAVE audio asset ({formatBytes(entry.uncompressedSize)}). Click Play to audition via Web Audio API.
-            </p>
+            <p className="text-xs text-slate-400 mt-0.5">{formatDesc}</p>
           </div>
           <div className="flex items-center gap-2">
             <button
@@ -699,7 +780,7 @@ export const AssetPreviewer: React.FC<AssetPreviewerProps> = ({
               className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-none border border-[#182232] transition-colors whitespace-nowrap shrink-0"
             >
               <Download className="w-3.5 h-3.5" />
-              <span>Export .WAV</span>
+              <span>Export .{exportExt}</span>
             </button>
           </div>
         </div>

@@ -1,4 +1,6 @@
 import { describe, it, expect } from 'vitest';
+import * as fs from 'fs';
+import * as path from 'path';
 import { parseGameArchive } from '../src/services/archiveParser';
 import {
   isRenpyArchive,
@@ -165,5 +167,66 @@ describe('Ren\'Py Archive (RPA) Parser Suite', () => {
     for (let i = 0; i < testFile.data.length; i++) {
       expect(entry.data[i]).toBe(testFile.data[i]);
     }
+  });
+
+  it('6. Successfully parses authentic public/samples/sample.rpa with genuine Ogg Vorbis soundtrack', () => {
+    const rpaPath = path.resolve(__dirname, '../public/samples/sample.rpa');
+    const rpaBuffer = fs.readFileSync(rpaPath);
+    const rpaBytes = new Uint8Array(rpaBuffer);
+
+    expect(isRenpyArchive(rpaBytes, 'sample.rpa')).toBe(true);
+
+    const parsed = parseGameArchive('sample.rpa', rpaBytes);
+    expect(parsed.formatId).toBe('RPA');
+    expect(parsed.formatName).toContain('RPA-3.0');
+    expect(parsed.entries.length).toBe(6);
+
+    // 1. Audio entry verification
+    const themeEntry = parsed.entries.find((e) => e.path === 'audio/theme.ogg');
+    expect(themeEntry, 'theme.ogg entry must exist').toBeDefined();
+    expect(themeEntry!.category).toBe('audio');
+    expect(themeEntry!.data.length).toBeGreaterThan(10000);
+    // Verify Ogg magic "OggS"
+    expect(themeEntry!.data[0]).toBe(0x4f); // O
+    expect(themeEntry!.data[1]).toBe(0x67); // g
+    expect(themeEntry!.data[2]).toBe(0x67); // g
+    expect(themeEntry!.data[3]).toBe(0x53); // S
+
+    // Check Vorbis header packet exists
+    const oggString = new TextDecoder('latin1').decode(themeEntry!.data.slice(0, 200));
+    expect(oggString).toContain('vorbis');
+
+    // 2. Images verification
+    const bgEntry = parsed.entries.find((e) => e.path === 'images/bg_room.png');
+    expect(bgEntry, 'bg_room.png entry must exist').toBeDefined();
+    expect(bgEntry!.category).toBe('texture');
+    expect(bgEntry!.data[0]).toBe(0x89);
+    expect(bgEntry!.data[1]).toBe(0x50);
+    expect(bgEntry!.data[2]).toBe(0x4e);
+    expect(bgEntry!.data[3]).toBe(0x47);
+
+    const webpEntry = parsed.entries.find((e) => e.path === 'images/eileen_happy.webp');
+    expect(webpEntry, 'eileen_happy.webp entry must exist').toBeDefined();
+    expect(webpEntry!.category).toBe('texture');
+    expect(webpEntry!.data[0]).toBe(0x52); // R
+    expect(webpEntry!.data[1]).toBe(0x49); // I
+    expect(webpEntry!.data[2]).toBe(0x46); // F
+    expect(webpEntry!.data[3]).toBe(0x46); // F
+
+    // 3. Script files verification
+    const scriptEntry = parsed.entries.find((e) => e.path === 'script.rpy');
+    expect(scriptEntry, 'script.rpy entry must exist').toBeDefined();
+    expect(scriptEntry!.category).toBe('script');
+    const scriptText = new TextDecoder().decode(scriptEntry!.data);
+    expect(scriptText).toContain('label start:');
+    expect(scriptText).toContain("Welcome to Spet's Universal Game File Opener!");
+
+    const optionsEntry = parsed.entries.find((e) => e.path === 'options.rpy');
+    expect(optionsEntry, 'options.rpy entry must exist').toBeDefined();
+    expect(optionsEntry!.category).toBe('script');
+
+    const guiEntry = parsed.entries.find((e) => e.path === 'gui.rpy');
+    expect(guiEntry, 'gui.rpy entry must exist').toBeDefined();
+    expect(guiEntry!.category).toBe('script');
   });
 });

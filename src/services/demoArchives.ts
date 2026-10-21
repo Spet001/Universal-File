@@ -114,10 +114,10 @@ export const SAMPLE_ARCHIVES: SampleArchivePreset[] = [
     engine: 'Ren\'Py Visual Novel Engine',
     title: 'Ren\'Py Visual Novel RPA Archive Demo',
     summary:
-      'Authentic Ren\'Py RPA-3.0 container archive with 32-bit XOR key obfuscation, compressed Pickle index, visual novel script assets (.rpy), and textures.',
-    fileSize: 784,
+      'Authentic Ren\'Py RPA-3.0 container archive with 32-bit XOR key obfuscation, compressed Pickle index, visual novel script assets (.rpy), room graphics, and playable open-source Ogg Vorbis audio.',
+    fileSize: 15476,
     url: '/samples/sample.rpa',
-    license: 'MIT / Open Source',
+    license: 'MIT / GPL-3.0 / Open Source',
     sourceUrl: 'https://www.renpy.org/',
   },
 ];
