@@ -20,11 +20,11 @@ export function isFromSoftArchive(bytes: Uint8Array, fileName: string): boolean 
     return true;
   }
   if (bytes.length >= 4) {
-    // "DCX\0"
+
     if (bytes[0] === 0x44 && bytes[1] === 0x43 && bytes[2] === 0x58 && bytes[3] === 0x00) return true;
-    // "BND3"
+
     if (bytes[0] === 0x42 && bytes[1] === 0x4e && bytes[2] === 0x44 && bytes[3] === 0x33) return true;
-    // "BND4"
+
     if (bytes[0] === 0x42 && bytes[1] === 0x4e && bytes[2] === 0x44 && bytes[3] === 0x34) return true;
   }
   return false;
@@ -43,7 +43,6 @@ export function parseFromSoftArchive(fileName: string, bytes: Uint8Array, startT
     return parseBnd4Archive(fileName, bytes, startTime);
   }
 
-  // Fallback: check if inner content after header has BND magic
   for (let offset = 0; offset < Math.min(bytes.length - 4, 128); offset += 4) {
     const sub = new TextDecoder('ascii').decode(bytes.subarray(offset, offset + 4));
     if (sub === 'BND3') return parseBnd3Archive(fileName, bytes.subarray(offset), startTime);
@@ -53,9 +52,6 @@ export function parseFromSoftArchive(fileName: string, bytes: Uint8Array, startT
   return parseBnd3Archive(fileName, bytes, startTime);
 }
 
-/**
- * 1. DCX Deflate / Kraken Compressed Envelope
- */
 function parseDcxArchive(fileName: string, bytes: Uint8Array, startTime: number): ParsedArchive {
   const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
   let uncompressedSize = 0;
@@ -63,11 +59,10 @@ function parseDcxArchive(fileName: string, bytes: Uint8Array, startTime: number)
   let compType = 'DFLT';
   let dataOffset = 0x48;
 
-  // Search standard DCX chunks: DCS (size), DCP (method), DCA (data)
   for (let i = 0; i < Math.min(bytes.length - 8, 256); i++) {
     const chunk = new TextDecoder('ascii').decode(bytes.subarray(i, i + 3));
     if (chunk === 'DCS') {
-      uncompressedSize = view.getUint32(i + 4, false); // Big Endian
+      uncompressedSize = view.getUint32(i + 4, false);
       compressedSize = view.getUint32(i + 8, false);
     } else if (chunk === 'DCP') {
       compType = new TextDecoder('ascii').decode(bytes.subarray(i + 4, i + 8));
@@ -102,7 +97,6 @@ function parseDcxArchive(fileName: string, bytes: Uint8Array, startTime: number)
     }
   }
 
-  // If successfully decompressed and payload is BND3 or BND4, parse it directly!
   if (decompressedPayload && decompressedPayload.length >= 4) {
     const innerMagic = new TextDecoder('ascii').decode(decompressedPayload.subarray(0, 4));
     const innerName = fileName.replace(/\.dcx$/i, '');
@@ -126,7 +120,6 @@ function parseDcxArchive(fileName: string, bytes: Uint8Array, startTime: number)
     }
   }
 
-  // Loose decompressed asset inside DCX
   const headerFields: ArchiveHeaderField[] = [
     { label: 'Signature', offset: '0x00', length: 4, value: 'DCX\\0 (FromSoftware Container)', description: 'FromSoftware Compressed Container' },
     { label: 'Compression Algorithm', offset: 'DCP', length: 4, value: compType === 'DFLT' ? 'Zlib Deflate (DFLT)' : compType, description: 'Payload compression method' },
@@ -169,9 +162,6 @@ function parseDcxArchive(fileName: string, bytes: Uint8Array, startTime: number)
   };
 }
 
-/**
- * 2. BND3 (Binder 3 - Dark Souls 1, Demon's Souls, Armored Core)
- */
 function parseBnd3Archive(fileName: string, bytes: Uint8Array, startTime: number): ParsedArchive {
   const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
   const version = bytes.length >= 12 ? new TextDecoder('ascii').decode(bytes.subarray(4, 12)).replace(/\0+$/, '') : '07D7R6';
@@ -191,7 +181,6 @@ function parseBnd3Archive(fileName: string, bytes: Uint8Array, startTime: number
   const entries: ArchiveEntry[] = [];
   const safeCount = Math.min(Math.max(0, fileCount), 20000);
 
-  // Each file header is 24 bytes in BND3 (with name offset and sizes)
   const fileHeaderSize = 24;
   let currHeaderPos = 0x20;
 
@@ -203,7 +192,6 @@ function parseBnd3Archive(fileName: string, bytes: Uint8Array, startTime: number
     const nameOffset = view.getUint32(currHeaderPos + 16, !isBigEndian);
     const uncompSize = view.getUint32(currHeaderPos + 20, !isBigEndian) || compSize;
 
-    // Read null-terminated string at nameOffset
     let rawPath = '';
     if (nameOffset > 0 && nameOffset < bytes.length) {
       let pEnd = nameOffset;
@@ -256,9 +244,6 @@ function parseBnd3Archive(fileName: string, bytes: Uint8Array, startTime: number
   };
 }
 
-/**
- * 3. BND4 (Binder 4 - Dark Souls 2/3, Bloodborne, Sekiro, Elden Ring, AC6)
- */
 function parseBnd4Archive(fileName: string, bytes: Uint8Array, startTime: number): ParsedArchive {
   const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
   const isBigEndian = bytes.length >= 10 ? bytes[9] === 1 : false;
@@ -277,7 +262,7 @@ function parseBnd4Archive(fileName: string, bytes: Uint8Array, startTime: number
 
   const entries: ArchiveEntry[] = [];
   const safeCount = Math.min(Math.max(0, fileCount), 25000);
-  const fileHeaderSize = 36; // 64-bit offsets
+  const fileHeaderSize = 36;
 
   let currHeaderPos = fileHeadersOffset > 0 && fileHeadersOffset < bytes.length ? fileHeadersOffset : 0x40;
 
@@ -287,7 +272,6 @@ function parseBnd4Archive(fileName: string, bytes: Uint8Array, startTime: number
     const dataOffset = Number(view.getBigUint64(currHeaderPos + 24, !isBigEndian));
     const fileId = view.getUint32(currHeaderPos + 32, !isBigEndian);
 
-    // BND4 string is often right after or pointed by name offset
     let rawPath = '';
     const nameOffset = currHeaderPos + fileHeaderSize;
     if (nameOffset < bytes.length) {

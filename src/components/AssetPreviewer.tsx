@@ -93,7 +93,7 @@ export const AssetPreviewer: React.FC<AssetPreviewerProps> = ({
       return disassembleT6GscInfo(entry.data);
     }
     if (isBinaryPayload) {
-      // Render clean structured hex + ASCII dump (like Spet's hexdump()) instead of raw mojibake
+
       const limit = Math.min(entry.data.length, 16384);
       const lines: string[] = [];
       for (let i = 0; i < limit; i += 16) {
@@ -125,7 +125,6 @@ export const AssetPreviewer: React.FC<AssetPreviewerProps> = ({
     stopAudio();
   }, [entry.id, decodedString]);
 
-  // 1. Render DOOM 64x64 Floor Flat on Canvas using PLAYPAL
   useEffect(() => {
     if (entry.data.length !== 4096 || !flatCanvasRef.current) return;
     const ctx = flatCanvasRef.current.getContext('2d');
@@ -149,7 +148,6 @@ export const AssetPreviewer: React.FC<AssetPreviewerProps> = ({
     ctx.putImageData(imgData, 0, 0);
   }, [entry, playpalData]);
 
-  // 2. Render DOOM 2D Map Vector Geometry (VERTEXES + LINEDEFS)
   const mapGeometry = useMemo(() => {
     if (archive.formatId !== 'WAD') return null;
     const upper = entry.name.toUpperCase();
@@ -246,7 +244,6 @@ export const AssetPreviewer: React.FC<AssetPreviewerProps> = ({
     }
   }, [mapGeometry]);
 
-  // 3. Render Audio Waveform if entry is audio
   useEffect(() => {
     if (entry.category !== 'audio' || !waveCanvasRef.current) return;
     const canvas = waveCanvasRef.current;
@@ -306,7 +303,6 @@ export const AssetPreviewer: React.FC<AssetPreviewerProps> = ({
       drawWaveform(samples);
     };
 
-    // Attempt true decoded waveform rendering via Web Audio API (for Vorbis, Opus, MP3, WAV)
     try {
       const AudioCtxClass = window.AudioContext || (window as any).webkitAudioContext;
       if (AudioCtxClass) {
@@ -329,7 +325,7 @@ export const AssetPreviewer: React.FC<AssetPreviewerProps> = ({
         };
       }
     } catch {
-      // AudioContext unavailable or failed to initialize
+
     }
 
     drawRawPCM();
@@ -343,7 +339,7 @@ export const AssetPreviewer: React.FC<AssetPreviewerProps> = ({
       try {
         audioSourceRef.current.stop();
       } catch {
-        // ignore
+
       }
       audioSourceRef.current = null;
     }
@@ -394,7 +390,6 @@ export const AssetPreviewer: React.FC<AssetPreviewerProps> = ({
     setTimeout(() => setSavedNotice(false), 2000);
   };
 
-  // 4. PS1 .TIM Texture image decoder & canvas renderer
   const ps1Tim = useMemo(() => {
     if (
       entry.metadata?.isPs1Tim ||
@@ -421,7 +416,6 @@ export const AssetPreviewer: React.FC<AssetPreviewerProps> = ({
     ctx.putImageData(imgData, 0, 0);
   }, [ps1Tim]);
 
-  // NDS 32x32 4bpp Banner Icon Canvas Renderer
   useEffect(() => {
     if (!entry.metadata?.isNdsIcon || !ndsCanvasRef.current) return;
     const canvas = ndsCanvasRef.current;
@@ -433,7 +427,6 @@ export const AssetPreviewer: React.FC<AssetPreviewerProps> = ({
     ctx.putImageData(imgData, 0, 0);
   }, [entry]);
 
-  // 5. RAD Game Tools Bink Video (.bik / .bk2) inspector
   const binkVideo = useMemo(() => {
     if (
       entry.category === 'video' ||
@@ -457,7 +450,6 @@ export const AssetPreviewer: React.FC<AssetPreviewerProps> = ({
     return null;
   }, [entry]);
 
-  // 6. id Tech 6 Binary Model (.bmodel) mesh inspector
   const bmodelMesh = useMemo(() => {
     if (
       entry.name.toLowerCase().endsWith('.bmodel') ||
@@ -472,7 +464,6 @@ export const AssetPreviewer: React.FC<AssetPreviewerProps> = ({
     return null;
   }, [entry]);
 
-  // 7. Xbox 360 Executable (XEX2) Header & Section Analysis
   const xexInfo = useMemo(() => {
     const isXex =
       entry.metadata?.isXex ||
@@ -490,7 +481,6 @@ export const AssetPreviewer: React.FC<AssetPreviewerProps> = ({
     }
   }, [entry]);
 
-  // 8. Xbox GDK MicrosoftGame.config Inspector
   const gdkConfigInfo = useMemo(() => {
     const lower = entry.name.toLowerCase();
     if (lower === 'microsoftgame.config' || entry.metadata?.isGdkConfig) {
@@ -504,7 +494,6 @@ export const AssetPreviewer: React.FC<AssetPreviewerProps> = ({
     return null;
   }, [entry]);
 
-  // 9. UWP / AppX Package Manifest Inspector
   const appxManifestInfo = useMemo(() => {
     const lower = entry.name.toLowerCase();
     if (lower === 'appxmanifest.xml' || entry.metadata?.isAppxManifest) {
@@ -540,7 +529,6 @@ export const AssetPreviewer: React.FC<AssetPreviewerProps> = ({
     };
   }, [imageBlobUrl]);
 
-  // Parse CSV rows if entry is a StringTable (.csv)
   const parsedCsvRows = useMemo(() => {
     if (entry.metadata?.ffKind !== 'stringtable' && !entry.name.toLowerCase().endsWith('.csv')) {
       return null;
@@ -550,7 +538,6 @@ export const AssetPreviewer: React.FC<AssetPreviewerProps> = ({
     return lines.slice(0, 250).map((line) => line.split(','));
   }, [entry]);
 
-  // Render PLAYPAL 256-Color Swatch Grid
   if (entry.category === 'palette' && entry.data.length >= 768) {
     const r = entry.data[selectedColorIdx * 3];
     const g = entry.data[selectedColorIdx * 3 + 1];
@@ -640,7 +627,6 @@ export const AssetPreviewer: React.FC<AssetPreviewerProps> = ({
     );
   }
 
-  // Render DOOM 64x64 Flat Texture (4096 bytes)
   if (entry.data.length === 4096 && entry.category === 'texture') {
     return (
       <div className="p-5 space-y-5 overflow-y-auto h-full">
@@ -697,7 +683,6 @@ export const AssetPreviewer: React.FC<AssetPreviewerProps> = ({
     );
   }
 
-  // Render DOOM 2D Map Vector Geometry
   if (mapGeometry) {
     return (
       <div className="p-5 space-y-4 overflow-y-auto h-full">
@@ -730,7 +715,6 @@ export const AssetPreviewer: React.FC<AssetPreviewerProps> = ({
     );
   }
 
-  // Render Audio Waveform Player
   if (entry.category === 'audio') {
     const lowerName = entry.name.toLowerCase();
     const isOgg = lowerName.endsWith('.ogg') || (entry.data.length >= 4 && entry.data[0] === 0x4f && entry.data[1] === 0x67 && entry.data[2] === 0x67 && entry.data[3] === 0x53);
@@ -792,7 +776,6 @@ export const AssetPreviewer: React.FC<AssetPreviewerProps> = ({
     );
   }
 
-  // Render RAD Game Tools Bink Video (.bik / .bk2)
   if (binkVideo) {
     const { info, timelineText } = binkVideo;
     return (
@@ -822,7 +805,6 @@ export const AssetPreviewer: React.FC<AssetPreviewerProps> = ({
           </button>
         </div>
 
-        {/* Video Metadata Cards */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           <div className="p-3 bg-[#0c121d] border border-[#182232] rounded-none">
             <div className="text-[10px] uppercase font-mono tracking-wider text-slate-500">Resolution</div>
@@ -865,7 +847,6 @@ export const AssetPreviewer: React.FC<AssetPreviewerProps> = ({
           </div>
         </div>
 
-        {/* Audio Track Breakdown */}
         {info.audioTracks && info.audioTracks.length > 0 && (
           <div className="p-4 bg-[#06090f] border border-[#182232] rounded-none space-y-2">
             <div className="flex items-center gap-2 text-xs font-semibold text-slate-300">
@@ -886,7 +867,6 @@ export const AssetPreviewer: React.FC<AssetPreviewerProps> = ({
           </div>
         )}
 
-        {/* Frame Seek Timeline Visualizer */}
         <div className="p-4 bg-[#06090f] border border-[#182232] rounded-none space-y-3">
           <div className="flex items-center justify-between">
             <div className="text-xs font-semibold text-slate-300 flex items-center gap-2">
@@ -943,7 +923,6 @@ export const AssetPreviewer: React.FC<AssetPreviewerProps> = ({
           )}
         </div>
 
-        {/* Seek Table Dump */}
         <div className="p-4 bg-[#06090f] border border-[#182232] rounded-none space-y-2">
           <div className="text-xs font-semibold text-slate-300">Timeline Seek Table Header Report</div>
           <pre className="p-3 bg-[#06090f] text-slate-300 font-mono text-xs rounded-none border border-[#182232] max-h-56 overflow-y-auto leading-5 select-text">
@@ -954,7 +933,6 @@ export const AssetPreviewer: React.FC<AssetPreviewerProps> = ({
     );
   }
 
-  // Render PS1 .TIM Texture with CLUT
   if (ps1Tim) {
     return (
       <div className="p-5 space-y-4 overflow-y-auto h-full bg-[#06090f]">
@@ -1000,7 +978,6 @@ export const AssetPreviewer: React.FC<AssetPreviewerProps> = ({
           </div>
         </div>
 
-        {/* PS1 Texture Canvas */}
         <div className="flex items-center justify-center p-8 bg-[#06090f] border border-[#182232] rounded-none overflow-auto min-h-[220px]">
           <canvas
             ref={timCanvasRef}
@@ -1013,7 +990,6 @@ export const AssetPreviewer: React.FC<AssetPreviewerProps> = ({
           />
         </div>
 
-        {/* CLUT Palette Swatches */}
         {ps1Tim.paletteColorsRgba.length > 0 && (
           <div className="p-4 bg-[#06090f] border border-[#182232] rounded-none space-y-2">
             <div className="flex items-center justify-between">
@@ -1042,7 +1018,6 @@ export const AssetPreviewer: React.FC<AssetPreviewerProps> = ({
     );
   }
 
-  // Render Nintendo DS 32x32 4bpp Banner Icon
   if (entry.metadata?.isNdsIcon) {
     return (
       <div className="p-5 space-y-5 overflow-y-auto h-full bg-[#06090f]">
@@ -1103,7 +1078,6 @@ export const AssetPreviewer: React.FC<AssetPreviewerProps> = ({
     );
   }
 
-  // Render id Tech 6 Binary Model (.bmodel) Mesh Geometry
   if (bmodelMesh) {
     return (
       <div className="p-5 space-y-5 overflow-y-auto h-full bg-[#06090f]">
@@ -1187,7 +1161,6 @@ export const AssetPreviewer: React.FC<AssetPreviewerProps> = ({
     );
   }
 
-  // Render Xbox 360 Executable (XEX2) Analysis Dashboard
   if (xexInfo) {
     const extra = (xexInfo.extraInfo || {}) as Record<string, any>;
     return (
@@ -1312,7 +1285,6 @@ export const AssetPreviewer: React.FC<AssetPreviewerProps> = ({
     );
   }
 
-  // Render Xbox GDK MicrosoftGame.config Inspector
   if (gdkConfigInfo) {
     return (
       <div className="p-5 space-y-5 overflow-y-auto h-full bg-[#06090f]">
@@ -1388,7 +1360,6 @@ export const AssetPreviewer: React.FC<AssetPreviewerProps> = ({
     );
   }
 
-  // Render UWP / AppX Package Manifest Inspector
   if (appxManifestInfo) {
     return (
       <div className="p-5 space-y-5 overflow-y-auto h-full bg-[#06090f]">
@@ -1449,7 +1420,6 @@ export const AssetPreviewer: React.FC<AssetPreviewerProps> = ({
     );
   }
 
-  // Render Standard Image Texture (PNG/JPG/BMP)
   if (imageBlobUrl) {
     return (
       <div className="p-5 space-y-4 overflow-y-auto h-full">
@@ -1479,7 +1449,6 @@ export const AssetPreviewer: React.FC<AssetPreviewerProps> = ({
     );
   }
 
-  // Render StringTable (.csv) Interactive Spreadsheet Grid
   if (parsedCsvRows && csvViewMode === 'grid') {
     return (
       <div className="flex flex-col h-full bg-[#06090f]">
@@ -1541,7 +1510,6 @@ export const AssetPreviewer: React.FC<AssetPreviewerProps> = ({
     );
   }
 
-  // Render Compiled T6/T5 GSC Bytecode Disassembly OR Editable Script / Rawfile / Localize Editor
   return (
     <div className="flex flex-col h-full bg-[#06090f]">
       <input

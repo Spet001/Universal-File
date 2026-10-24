@@ -12,10 +12,6 @@ export interface Ff13FileInfo {
   isCompressed: boolean;
 }
 
-/**
- * Universal Final Fantasy XIII Trilogy (FFXIII, FFXIII-2, Lightning Returns) Container Parser
- * Supports white_data containers: filelist*.win32.bin, white_img*.win32.bin, .wbd, .wdb, .dat, .img
- */
 export function parseFf13Archive(fileName: string, bytes: Uint8Array, startTime: number): ParsedArchive {
   const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
   const lower = fileName.toLowerCase();
@@ -24,10 +20,8 @@ export function parseFf13Archive(fileName: string, bytes: Uint8Array, startTime:
   const entries: ArchiveEntry[] = [];
   const headerFields: ArchiveHeaderField[] = [];
 
-  // Check if standard FFXIII Filelist header
-  // 12-byte header: ChunkInfoTableOffset (uint32), ChunkDataStartOffset (uint32), FileCount (uint32)
   let baseOffset = 0;
-  // If encrypted header or crypto padding (32 bytes)
+
   if (bytes.length > 44 && readAscii(bytes, 0, 4) === 'CRYP') {
     baseOffset = 32;
   }
@@ -69,8 +63,6 @@ export function parseFf13Archive(fileName: string, bytes: Uint8Array, startTime:
       }
     );
 
-    // Read entries table
-    // V1 Entry: FileCode (4B), ChunkID (2B), FileInfoPos (2B) = 8 bytes
     let entryPos = baseOffset + 12;
     const entriesList: { fileCode: number; chunkId: number; fileInfoPos: number }[] = [];
     let maxChunkId = 0;
@@ -86,7 +78,6 @@ export function parseFf13Archive(fileName: string, bytes: Uint8Array, startTime:
 
     const chunkCount = maxChunkId + 1;
 
-    // Read path chunks
     const decompressedChunks: string[] = [];
     let chunkInfoPos = baseOffset + chunkInfoTableOffset;
 
@@ -110,7 +101,6 @@ export function parseFf13Archive(fileName: string, bytes: Uint8Array, startTime:
       }
     }
 
-    // Decode file descriptors: "sectorOffsetHex:uncmpSizeHex:cmpSizeHex:virtualPath"
     let entryIdx = 0;
     for (const item of entriesList) {
       if (item.chunkId < decompressedChunks.length) {
@@ -157,7 +147,6 @@ export function parseFf13Archive(fileName: string, bytes: Uint8Array, startTime:
     }
   }
 
-  // If this is a White Data image container (.wbd, white_img*.bin, or .dat) with direct embedded files
   if (entries.length === 0) {
     headerFields.push({
       label: 'White Data Image / Binary Stream',
@@ -167,7 +156,6 @@ export function parseFf13Archive(fileName: string, bytes: Uint8Array, startTime:
       description: 'FFXIII raw white_data binary / texture / database container',
     });
 
-    // Scan for 2048-sector aligned zlib blocks or textures
     let blockIdx = 0;
     const sectorCount = Math.floor(bytes.length / 2048);
 
@@ -198,7 +186,7 @@ export function parseFf13Archive(fileName: string, bytes: Uint8Array, startTime:
               });
             }
           } catch {
-            // Keep scanning
+
           }
         }
       }

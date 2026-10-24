@@ -9,7 +9,7 @@ interface HexViewerProps {
 }
 
 const BYTES_PER_ROW = 16;
-const ROWS_PER_PAGE = 32; // 512 bytes per page for instant zero-lag rendering
+const ROWS_PER_PAGE = 32;
 
 export const HexViewer: React.FC<HexViewerProps> = ({ data, baseOffset = 0, title }) => {
   const [selectedOffset, setSelectedOffset] = useState<number>(0);
@@ -23,7 +23,6 @@ export const HexViewer: React.FC<HexViewerProps> = ({ data, baseOffset = 0, titl
   const pageStartByte = safePage * BYTES_PER_ROW * ROWS_PER_PAGE;
   const pageEndByte = Math.min(data.length, pageStartByte + BYTES_PER_ROW * ROWS_PER_PAGE);
 
-  // Decode multi-type values at selectedOffset
   const decodedValues = useMemo(() => {
     if (data.length === 0 || selectedOffset >= data.length) {
       return null;
@@ -120,7 +119,7 @@ export const HexViewer: React.FC<HexViewerProps> = ({ data, baseOffset = 0, titl
 
   return (
     <div className="flex flex-col h-full bg-[#06090f] text-[#cbd5e1] select-none font-mono text-xs">
-      {/* Toolbar */}
+
       <div className="h-[26px] shrink-0 flex items-center justify-between gap-2 px-2.5 border-b border-[#182232] bg-[#0c121d]">
         <div className="flex items-center gap-2 text-[11px] text-[#64748b] truncate">
           <span className="text-slate-200 font-medium truncate">{title || 'Binary Stream'}</span>
@@ -172,11 +171,10 @@ export const HexViewer: React.FC<HexViewerProps> = ({ data, baseOffset = 0, titl
         </div>
       </div>
 
-      {/* Main Split: Hex Matrix + Data Inspector */}
       <div className="flex-1 grid grid-cols-1 xl:grid-cols-12 min-h-0 overflow-hidden">
-        {/* Hex Matrix */}
+
         <div className="xl:col-span-8 overflow-auto p-2 text-xs leading-5 tabular-nums border-b xl:border-b-0 xl:border-r border-[#182232] bg-[#06090f]">
-          {/* Column Header */}
+
           <div className="flex items-center text-[#64748b] pb-1 mb-1 border-b border-[#182232] select-none text-[10px]">
             <span className="w-20 shrink-0">OFFSET</span>
             <div className="flex-1 grid grid-cols-16 gap-0.5 text-center">
@@ -199,12 +197,11 @@ export const HexViewer: React.FC<HexViewerProps> = ({ data, baseOffset = 0, titl
                   key={rowOffset}
                   className="flex items-center hover:bg-[#38bdf8]/[0.06] px-0.5"
                 >
-                  {/* Offset Column */}
+
                   <span className="w-20 shrink-0 text-[#64748b] select-all text-[11px]">
                     {(baseOffset + rowOffset).toString(16).toUpperCase().padStart(8, '0')}
                   </span>
 
-                  {/* 16 Hex Bytes */}
                   <div className="flex-1 grid grid-cols-16 gap-0.5 text-center text-[11px]">
                     {Array.from({ length: 16 }).map((_, colIdx) => {
                       const absIdx = rowOffset + colIdx;
@@ -237,7 +234,6 @@ export const HexViewer: React.FC<HexViewerProps> = ({ data, baseOffset = 0, titl
                     })}
                   </div>
 
-                  {/* ASCII Column */}
                   <div className="w-36 shrink-0 pl-3 tracking-wider text-slate-400 flex text-[11px]">
                     {Array.from(rowSlice).map((b, colIdx) => {
                       const absIdx = rowOffset + colIdx;
@@ -266,7 +262,6 @@ export const HexViewer: React.FC<HexViewerProps> = ({ data, baseOffset = 0, titl
           )}
         </div>
 
-        {/* Right Column: Live Binary Data Type Inspector */}
         <div className="xl:col-span-4 p-3 bg-[#090d14] overflow-y-auto flex flex-col justify-between gap-3">
           <div className="space-y-2">
             <div>
@@ -334,7 +329,6 @@ export const HexViewer: React.FC<HexViewerProps> = ({ data, baseOffset = 0, titl
             ) : null}
           </div>
 
-          {/* Pagination Controls */}
           <div className="pt-2 border-t border-[#182232] flex items-center justify-between text-[10px] font-mono tabular-nums">
             <button
               type="button"

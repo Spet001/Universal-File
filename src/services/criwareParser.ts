@@ -13,15 +13,15 @@ export function isCriwareArchive(bytes: Uint8Array, fileName: string): boolean {
     return true;
   }
   if (bytes.length >= 4) {
-    // AFS2
+
     if (bytes[0] === 0x41 && bytes[1] === 0x46 && bytes[2] === 0x53 && bytes[3] === 0x32) return true;
-    // @UTF
+
     if (bytes[0] === 0x40 && bytes[1] === 0x55 && bytes[2] === 0x54 && bytes[3] === 0x46) return true;
-    // CRID
+
     if (bytes[0] === 0x43 && bytes[1] === 0x52 && bytes[2] === 0x49 && bytes[3] === 0x44) return true;
-    // HCA\0
+
     if (bytes[0] === 0x48 && bytes[1] === 0x43 && bytes[2] === 0x41 && bytes[3] === 0x00) return true;
-    // ADX (0x80 0x00)
+
     if (bytes[0] === 0x80 && bytes[1] === 0x00) return true;
   }
   return false;
@@ -50,9 +50,6 @@ export function parseCriwareArchive(fileName: string, bytes: Uint8Array, startTi
   return parseAfs2Archive(fileName, bytes, startTime);
 }
 
-/**
- * 1. CRI Atom AFS2 Audio Wave Bank (.awb)
- */
 function parseAfs2Archive(fileName: string, bytes: Uint8Array, startTime: number): ParsedArchive {
   const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
   const version = bytes.length >= 5 ? bytes[4] : 1;
@@ -72,7 +69,6 @@ function parseAfs2Archive(fileName: string, bytes: Uint8Array, startTime: number
   const entries: ArchiveEntry[] = [];
   const safeCount = Math.min(Math.max(0, waveCount), 10000);
 
-  // Offset table follows wave IDs table (waveCount * 2 bytes)
   const idsOffset = 0x10;
   const offsetsTableOffset = idsOffset + safeCount * 2;
 
@@ -145,9 +141,6 @@ function parseAfs2Archive(fileName: string, bytes: Uint8Array, startTime: number
   };
 }
 
-/**
- * 2. CRI Audio Cue Bank (@UTF / .acb)
- */
 function parseAcbArchive(fileName: string, bytes: Uint8Array, startTime: number): ParsedArchive {
   const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
   const tableSize = bytes.length >= 8 ? view.getUint32(4, false) : 0;
@@ -168,7 +161,6 @@ function parseAcbArchive(fileName: string, bytes: Uint8Array, startTime: number)
 
   const entries: ArchiveEntry[] = [];
 
-  // Add the UTF metadata table entry
   entries.push({
     id: 'acb-utf-table',
     name: 'CueSheetTable.utf',
@@ -183,11 +175,10 @@ function parseAcbArchive(fileName: string, bytes: Uint8Array, startTime: number)
     data: bytes.subarray(0, Math.min(bytes.length, tableSize + 8)),
   });
 
-  // Search for embedded AFS2 or HCA / ADX payloads inside ACB
   let searchIdx = 0x20;
   let waveIdx = 0;
   while (searchIdx + 8 < bytes.length) {
-    // Embedded AFS2
+
     if (
       bytes[searchIdx] === 0x41 &&
       bytes[searchIdx + 1] === 0x46 &&
@@ -206,7 +197,7 @@ function parseAcbArchive(fileName: string, bytes: Uint8Array, startTime: number)
       }
       break;
     }
-    // Standalone HCA stream embedded
+
     if (
       bytes[searchIdx] === 0x48 &&
       bytes[searchIdx + 1] === 0x43 &&
@@ -251,9 +242,6 @@ function parseAcbArchive(fileName: string, bytes: Uint8Array, startTime: number)
   };
 }
 
-/**
- * 3. CRI Sofdec 2 Movie Container (CRID / .usm)
- */
 function parseUsmArchive(fileName: string, bytes: Uint8Array, startTime: number): ParsedArchive {
   const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
 
@@ -261,7 +249,6 @@ function parseUsmArchive(fileName: string, bytes: Uint8Array, startTime: number)
   let audioPayloadSize = 0;
   let packetCount = 0;
 
-  // Scan USM packets
   let pos = 0;
   while (pos + 8 <= bytes.length && packetCount < 5000) {
     const magic = new TextDecoder('ascii').decode(bytes.subarray(pos, pos + 4));
@@ -284,7 +271,6 @@ function parseUsmArchive(fileName: string, bytes: Uint8Array, startTime: number)
 
   const entries: ArchiveEntry[] = [];
 
-  // Demuxed streams representation
   entries.push({
     id: 'usm-video',
     name: 'video_track.m2v',
@@ -329,9 +315,6 @@ function parseUsmArchive(fileName: string, bytes: Uint8Array, startTime: number)
   };
 }
 
-/**
- * 4. CRI ADX Audio (.adx)
- */
 function parseAdxAudio(fileName: string, bytes: Uint8Array, startTime: number): ParsedArchive {
   const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
   const copyrightOffset = bytes.length >= 4 ? view.getUint16(2, false) : 0;
@@ -379,15 +362,11 @@ function parseAdxAudio(fileName: string, bytes: Uint8Array, startTime: number): 
   };
 }
 
-/**
- * 5. CRI High Compression Audio (.hca)
- */
 function parseHcaAudio(fileName: string, bytes: Uint8Array, startTime: number): ParsedArchive {
   const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
   const version = bytes.length >= 6 ? view.getUint16(4, false) : 0x0200;
   const headerSize = bytes.length >= 8 ? view.getUint16(6, false) : 0x60;
 
-  // Read 'fmt\0' chunk if present
   let channels = 2;
   let sampleRate = 48000;
   let blockCount = 0;

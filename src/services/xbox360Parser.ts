@@ -9,10 +9,6 @@ import {
   toHex,
 } from './archiveParser';
 
-/**
- * Xbox 360 Games on Demand (GOD), XContent (CON/LIVE/PIRS), and GDFX Disc Image Parser
- */
-
 export interface Xbox360ContentMetadata {
   signatureType: 'CON ' | 'LIVE' | 'PIRS' | 'GDFX';
   contentType: number;
@@ -45,9 +41,6 @@ const CONTENT_TYPE_NAMES: Record<number, string> = {
   0x000d0000: 'Title Update (TU)',
 };
 
-/**
- * Decodes null-terminated UTF-16 Big Endian string (used widely in Xbox 360 metadata)
- */
 export function decodeUtf16BE(bytes: Uint8Array, offset: number, maxBytes: number): string {
   const chars: string[] = [];
   const end = Math.min(bytes.length, offset + maxBytes);
@@ -59,13 +52,10 @@ export function decodeUtf16BE(bytes: Uint8Array, offset: number, maxBytes: numbe
   return chars.join('').trim();
 }
 
-/**
- * Checks if a byte buffer contains GDFX / XDVDFS (Xbox Disc Virtual File System)
- */
 export function isGdfxFilesystem(bytes: Uint8Array): { found: boolean; offset: number } {
-  // GDFX magic is "MICROSOFT*XBOX*MEDIA" (20 bytes)
+
   const magic = 'MICROSOFT*XBOX*MEDIA';
-  // Common offsets: Sector 32 (0x10000 = 65536), Sector 0 (0x00), or Sector 16 (0x8000)
+
   const candidateOffsets = [0x10000, 0x00, 0x800, 0x8000, 0x2000, 0x10800];
   for (const ofs of candidateOffsets) {
     if (bytes.length >= ofs + 20) {
@@ -75,7 +65,6 @@ export function isGdfxFilesystem(bytes: Uint8Array): { found: boolean; offset: n
     }
   }
 
-  // Linear scan in first 256KB if not at standard offsets
   const scanLimit = Math.min(bytes.length - 20, 0x40000);
   for (let ofs = 0; ofs <= scanLimit; ofs += 0x800) {
     if (readAscii(bytes, ofs, 20) === magic) {
@@ -86,9 +75,6 @@ export function isGdfxFilesystem(bytes: Uint8Array): { found: boolean; offset: n
   return { found: false, offset: -1 };
 }
 
-/**
- * Parses GDFX (Xbox 360 Game Disc Format) directory binary tree
- */
 export function parseGdfxDirectoryTree(
   bytes: Uint8Array,
   gdfxOffset: number,
@@ -97,14 +83,8 @@ export function parseGdfxDirectoryTree(
   const entries: ArchiveEntry[] = [];
   const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
 
-  // Sector size in Xbox 360 DVD / GDF is 2048 bytes (0x800)
   const SECTOR_SIZE = 2048;
 
-  // GDFX header at gdfxOffset:
-  // 0x00..0x13 (20 bytes): "MICROSOFT*XBOX*MEDIA"
-  // 0x14..0x17 (4 bytes): Root directory sector (uint32 LE)
-  // 0x18..0x1B (4 bytes): Root directory size (uint32 LE)
-  // 0x1C..0x23 (8 bytes): Image creation FILETIME
   if (bytes.length < gdfxOffset + 0x24) return entries;
 
   const rootSector = view.getUint32(gdfxOffset + 0x14, true);
@@ -112,11 +92,9 @@ export function parseGdfxDirectoryTree(
 
   if (rootSector === 0 || rootSize === 0) return entries;
 
-  // Root directory offset in bytes
   const rootByteOffset = baseSectorOffset + rootSector * SECTOR_SIZE;
   if (rootByteOffset >= bytes.length) return entries;
 
-  // Directory entry traversal queue: [dirByteOffset, dirSize, currentPath]
   const dirQueue: Array<{ offset: number; size: number; path: string }> = [
     { offset: rootByteOffset, size: rootSize, path: '' },
   ];
@@ -129,16 +107,6 @@ export function parseGdfxDirectoryTree(
     if (visitedDirs.has(dirOffset)) continue;
     visitedDirs.add(dirOffset);
 
-    // Directory tree traversal queue for binary tree nodes within this directory table
-    // Nodes in GDFX directory:
-    // uint16 LE: Left Child (offset divided by 4)
-    // uint16 LE: Right Child (offset divided by 4)
-    // uint32 LE: Sector Start (multiply by 2048 to get data offset)
-    // uint32 LE: File Size
-    // uint8: File Attributes (0x10 = Directory)
-    // uint8: Name Length
-    // Name Length bytes: ASCII filename
-    // Padding to 4-byte boundary
     const nodeOffsets: number[] = [0];
     const visitedNodes = new Set<number>();
 
@@ -202,9 +170,6 @@ export function parseGdfxDirectoryTree(
   return entries;
 }
 
-/**
- * Parses Xbox 360 Games on Demand (GOD) / XContent package (CON, LIVE, PIRS)
- */
 export function parseXbox360GodArchive(
   fileName: string,
   bytes: Uint8Array,
@@ -227,8 +192,6 @@ export function parseXbox360GodArchive(
     description: 'Xbox 360 XContent package container signature',
   });
 
-  // Extract Content Metadata (starts at 0x328 or 0x340 in XContent)
-  // Check for content type: 0x00007000 = GOD, 0x00010000 = XBLA, 0x00020000 = Demo, etc.
   let contentType = 0x00007000;
   let titleId = '415608C3';
   let mediaId = '00000000';
@@ -238,9 +201,6 @@ export function parseXbox360GodArchive(
   let discNumber = 1;
   let discTotal = 1;
 
-  // In XContent header:
-  // Offset 0x328 (or 0x344): Content Type (uint32 BE)
-  // Offset 0x360: Execution Info (Media ID 4B, Title ID 4B BE, Title Version, Base Version, Disc Number, Disc Total)
   if (bytes.length >= 0x400) {
     const ctCandidate1 = view.getUint32(0x328, false);
     const ctCandidate2 = view.getUint32(0x344, false);
@@ -250,7 +210,6 @@ export function parseXbox360GodArchive(
     else if (CONTENT_TYPE_NAMES[ctCandidate2]) contentType = ctCandidate2;
     else if (CONTENT_TYPE_NAMES[ctCandidate3]) contentType = ctCandidate3;
 
-    // Search for Title ID (usually at 0x360 or in execution info)
     for (const tidOfs of [0x360, 0x358, 0x364, 0x384]) {
       if (bytes.length >= tidOfs + 8) {
         const tidVal = view.getUint32(tidOfs + 4, false);
@@ -264,7 +223,6 @@ export function parseXbox360GodArchive(
       }
     }
 
-    // Search for Title Name (UTF-16BE) starting at 0x410 / 0x411 or scanned
     for (const strOfs of [0x410, 0x411, 0x400, 0x420, 0x440, 0x3b0]) {
       if (bytes.length > strOfs + 32) {
         const decoded = decodeUtf16BE(bytes, strOfs, 128);
@@ -275,7 +233,6 @@ export function parseXbox360GodArchive(
       }
     }
 
-    // Search for description / publisher
     for (const descOfs of [0x490, 0x510, 0x550, 0x600]) {
       if (bytes.length > descOfs + 32) {
         const decoded = decodeUtf16BE(bytes, descOfs, 256);
@@ -334,7 +291,6 @@ export function parseXbox360GodArchive(
     });
   }
 
-  // Scan for embedded PNG thumbnail image (often at ~0x171A or between 0x1000..0x3000)
   let thumbnailEntry: ArchiveEntry | null = null;
   const pngHeader = [0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a];
   for (let i = 0x800; i < Math.min(bytes.length - 8, 0x4000); i++) {
@@ -346,7 +302,7 @@ export function parseXbox360GodArchive(
       }
     }
     if (match) {
-      // Find IEND chunk (0x49 0x45 0x4E 0x44 + 4B CRC)
+
       let pngEnd = -1;
       for (let k = i + 8; k < Math.min(bytes.length - 4, i + 65536); k++) {
         if (
@@ -386,7 +342,6 @@ export function parseXbox360GodArchive(
   const entries: ArchiveEntry[] = [];
   if (thumbnailEntry) entries.push(thumbnailEntry);
 
-  // Check if GDFX (Xbox Disc Virtual File System) is present inside package or sector 32
   const gdfxCheck = isGdfxFilesystem(bytes);
   if (gdfxCheck.found) {
     const gdfxEntries = parseGdfxDirectoryTree(bytes, gdfxCheck.offset, 0);
@@ -402,22 +357,11 @@ export function parseXbox360GodArchive(
     });
   }
 
-  // If no GDFX files found or few files, check XContent File Table
-  // In XContent packages (DLC, Title Updates, Arcade titles):
-  // Metadata directory table typically starts at block allocation table or 0x37C / 0x4000
   if (entries.length <= 1 && bytes.length >= 0x4000) {
-    // Scan for file records in XContent directory
-    // Records are 64 bytes (0x40):
-    // 0x00..0x27: ASCII / UTF-8 filename (up to 40 bytes)
-    // 0x28: Flags (0x40 = directory, 0x00 = file)
-    // 0x29..0x2B: Number of consecutive blocks (uint24 BE)
-    // 0x2C..0x2F: Starting block (uint32 BE or uint24 BE)
-    // 0x30..0x31: Path index / parent folder
-    // 0x34..0x37: File Size (uint32 BE)
-    // 0x38..0x3B: Timestamp
+
     let dirScanStart = 0x2000;
     while (dirScanStart < Math.min(bytes.length - 64, 0x8000)) {
-      // Check if candidate directory block
+
       let validRecordCount = 0;
       for (let recOfs = dirScanStart; recOfs < dirScanStart + 0x1000 && recOfs + 64 <= bytes.length; recOfs += 64) {
         const firstByte = bytes[recOfs];
@@ -443,7 +387,6 @@ export function parseXbox360GodArchive(
           const startBlock = (bytes[recOfs + 0x2d] << 16) | (bytes[recOfs + 0x2e] << 8) | bytes[recOfs + 0x2f];
           const fileSize = view.getUint32(recOfs + 0x34, false);
 
-          // Data block size in XContent is 4096 (0x1000) bytes; data starts after header (~0x1000 or block table)
           const dataOffset = 0x1000 + startBlock * 0x1000;
           if (dataOffset < bytes.length && fileSize > 0) {
             const dataEnd = Math.min(bytes.length, dataOffset + fileSize);
@@ -475,7 +418,6 @@ export function parseXbox360GodArchive(
     }
   }
 
-  // If still empty (e.g. standalone GOD descriptor header), generate virtual descriptor entry
   if (entries.length === 0) {
     const descriptorText = `Xbox 360 Games on Demand Package Header\nTitle: ${titleName}\nTitle ID: 0x${titleId}\nMedia ID: 0x${mediaId}\nType: ${contentTypeName}\nPublisher: ${publisher}\nDisc: ${discNumber}/${discTotal}\nSignature: ${signatureType}\nFile Size: ${bytes.length} bytes\n`;
     const enc = new TextEncoder();
@@ -524,10 +466,6 @@ export function parseXbox360GodArchive(
   };
 }
 
-/**
- * Xbox 360 Executable (XEX / XEX1 / XEX2) Parser
- */
-
 export interface XexOptionalHeader {
   key: number;
   keyHex: string;
@@ -574,7 +512,6 @@ export function parseXbox360Xex(
     description: 'Xbox 360 native PowerPC executable binary container',
   });
 
-  // Module Flags (uint32 BE at 0x04)
   const moduleFlags = view.getUint32(4, false);
   const flagNames: string[] = [];
   if (moduleFlags & 0x01) flagNames.push('Title Module');
@@ -592,7 +529,6 @@ export function parseXbox360Xex(
     description: 'PowerPC executable execution mode & runtime permissions',
   });
 
-  // PE / Base Data Offset (uint32 BE at 0x08)
   const peDataOffset = view.getUint32(8, false);
   headerFields.push({
     label: 'PE / Base Data Offset',
@@ -602,7 +538,6 @@ export function parseXbox360Xex(
     description: 'Offset to PE header and uncompressed/decrypted section payload',
   });
 
-  // Certificate Offset (uint32 BE at 0x10)
   const certOffset = view.getUint32(0x10, false);
   headerFields.push({
     label: 'Certificate Offset',
@@ -612,7 +547,6 @@ export function parseXbox360Xex(
     description: 'Offset to Xbox Security Certificate and RSA Public Key',
   });
 
-  // Optional Headers Count (uint32 BE at 0x14)
   const optHeaderCount = view.getUint32(0x14, false);
   headerFields.push({
     label: 'Optional Headers Count',
@@ -622,7 +556,6 @@ export function parseXbox360Xex(
     description: 'Number of configuration headers describing title ID, imports, and libraries',
   });
 
-  // Parse Optional Headers
   const optionalHeaders: XexOptionalHeader[] = [];
   let titleId = '415608C3';
   let mediaId = '00000000';
@@ -645,7 +578,6 @@ export function parseXbox360Xex(
       value: valOrOfs,
     });
 
-    // 0x000002FF: Execution Info
     if (key === 0x000002ff && valOrOfs < bytes.length) {
       if (valOrOfs + 16 <= bytes.length) {
         mediaId = toHex(view.getUint32(valOrOfs, false), 8);
@@ -653,23 +585,19 @@ export function parseXbox360Xex(
       }
     }
 
-    // 0x000080FF: Image Base Address
     if (key === 0x000080ff) {
       baseAddress = `0x${toHex(valOrOfs, 8)}`;
     }
 
-    // 0x00008105: Entry Point Address
     if (key === 0x00008105) {
       entryPoint = `0x${toHex(valOrOfs, 8)}`;
     }
 
-    // 0x00010100: Original PE Name
     if (key === 0x00010100 && valOrOfs < bytes.length) {
       const name = readAscii(bytes, valOrOfs, 64);
       if (name) originalPeName = name;
     }
 
-    // 0x00010201: Static Libraries List
     if (key === 0x00010201 && valOrOfs < bytes.length) {
       const libDataOffset = valOrOfs;
       if (libDataOffset + 4 <= bytes.length) {
@@ -724,7 +652,6 @@ export function parseXbox360Xex(
   const entries: ArchiveEntry[] = [];
   const enc = new TextEncoder();
 
-  // 1. Entry: Optional Headers & Metadata Report
   const optSummary = optionalHeaders
     .map((h) => `[${h.keyHex}] ${h.name}: Value/Offset 0x${toHex(h.value, 8)}`)
     .join('\n');
@@ -750,7 +677,6 @@ export function parseXbox360Xex(
     },
   });
 
-  // 2. Entry: Security Certificate (if within bounds)
   if (certOffset > 0 && certOffset < bytes.length) {
     const certLength = Math.min(bytes.length - certOffset, 0x180);
     const certBytes = bytes.slice(certOffset, certOffset + certLength);
@@ -773,10 +699,9 @@ export function parseXbox360Xex(
     });
   }
 
-  // 3. Entry: PE Executable Payload / Sections
   if (peDataOffset > 0 && peDataOffset < bytes.length) {
     const peBytes = bytes.slice(peDataOffset);
-    // Check if PE header (MZ) is directly at PE offset
+
     const isMz = peBytes.length >= 2 && peBytes[0] === 0x4d && peBytes[1] === 0x5a;
     entries.push({
       id: 'xex-pe-payload',
@@ -796,7 +721,6 @@ export function parseXbox360Xex(
       },
     });
 
-    // Check for PE sections inside payload if MZ present
     if (isMz && peBytes.length >= 0x100) {
       const peView = new DataView(peBytes.buffer, peBytes.byteOffset, peBytes.byteLength);
       const peHeaderOffset = peView.getUint32(0x3c, true);

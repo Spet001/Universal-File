@@ -4,7 +4,7 @@ import { computeCRC32, toHex, bytesToHexPreview, formatBytes, classifyEntry } fr
 
 export const MAGIC_BO2_MSSTORE = 'TAffu100';
 export const MAGIC_BO1_MSSTORE = 'IWffu100';
-export const BLOCK_SIZE = 0x7fc0; // 32,704 bytes per BO2 raw-deflate block
+export const BLOCK_SIZE = 0x7fc0;
 export const VIRTUAL_BLOCK = 5;
 
 export const T6_ASSET_TYPES = [
@@ -161,9 +161,6 @@ export function decodeLatin1(bytes: Uint8Array, start = 0, end = bytes.length): 
   return out;
 }
 
-/**
- * Port of Spet's looks_binary(b)
- */
 export function looksBinary(b: Uint8Array): boolean {
   if (!b || b.length === 0) return false;
   let end = Math.min(b.length, 4096);
@@ -201,10 +198,6 @@ function isZeroPtrAt(z: Uint8Array, offset: number): boolean {
   return true;
 }
 
-/**
- * Compressed rawfiles (e.g. animtrees) are: u32 uncompressed_size + raw deflate (-15).
- * Returns inflated Uint8Array if valid, or null if not compressed.
- */
 export function inflateRawfile(b: Uint8Array): Uint8Array | null {
   if (b.length < 6) return null;
   const view = new DataView(b.buffer, b.byteOffset, b.byteLength);
@@ -221,9 +214,6 @@ export function inflateRawfile(b: Uint8Array): Uint8Array | null {
   }
 }
 
-/**
- * Port of Spet's gsc_info(buf) for compiled T6 (\x80GSC) scripts
- */
 export function disassembleT6GscInfo(buf: Uint8Array): string {
   if (
     buf.length < 0x40 ||
@@ -361,9 +351,6 @@ export function disassembleT6GscInfo(buf: Uint8Array): string {
   }
 }
 
-/**
- * Look ahead up to 64 bytes for the next valid raw-deflate block in BO2 TAffu100 files
- */
 function resyncBo2Block(
   raw: Uint8Array,
   view: DataView,
@@ -380,16 +367,13 @@ function resyncBo2Block(
           return { c, newOff: o, data };
         }
       } catch {
-        // continue scanning
+
       }
     }
   }
   throw new Error(`Corrupt compressed block at file offset ${toHex(off)}`);
 }
 
-/**
- * Parse XAsset Zone header (script_strings, depends, asset_types, data_start)
- */
 function parseZoneHeader(state: FastFileZoneState): void {
   const z = state.zone;
   const view = new DataView(z.buffer, z.byteOffset, z.byteLength);
@@ -449,7 +433,7 @@ function parseZoneHeader(state: FastFileZoneState): void {
       if (ptrOffsets[0] >= 4) ac = view.getUint32(ptrOffsets[0] - 4, true);
       p = ptrOffsets[0] + 8;
     } else {
-      // Fallback if 32-bit or custom BO1 header
+
       p = Math.min(0x24, z.length);
     }
 
@@ -502,10 +486,6 @@ function parseZoneHeader(state: FastFileZoneState): void {
   }
 }
 
-/**
- * Scan decompressed zone for Rawfiles, Compiled GSC/CSC Scripts, UI Menus, StringTables (.csv), and Localized Strings
- * Exact port of Spet's _scan() in bo1_bo2_fastfile_editor.py
- */
 function scanZoneAssets(state: FastFileZoneState): void {
   const z = state.zone;
   const view = new DataView(z.buffer, z.byteOffset, z.byteLength);
@@ -513,8 +493,6 @@ function scanZoneAssets(state: FastFileZoneState): void {
   const items: FastFileItem[] = [];
   let itemCounter = 0;
 
-  // 1. Scan for Rawfiles, Scripts, and Menus (RX_RAW)
-  // Pattern: PTR (8B) + len (4B) + \x00\x00\x00\x00 (4B) + PTR (8B) + printable_name\0
   let pos = state.dataStart;
   while (pos + 28 < n) {
     if (!isInlinePtrAt(z, pos)) {
@@ -522,7 +500,6 @@ function scanZoneAssets(state: FastFileZoneState): void {
       continue;
     }
 
-    // Check \x00\x00\x00\x00 at pos + 12 and PTR at pos + 16
     if (
       z[pos + 12] === 0 &&
       z[pos + 13] === 0 &&
@@ -597,7 +574,6 @@ function scanZoneAssets(state: FastFileZoneState): void {
     pos++;
   }
 
-  // 2. Scan for StringTables (RX_ST) and Localized Strings (RX_LOC)
   pos = state.dataStart;
   while (pos + 24 < n) {
     if (!isInlinePtrAt(z, pos)) {
@@ -605,7 +581,6 @@ function scanZoneAssets(state: FastFileZoneState): void {
       continue;
     }
 
-    // 2a. Check RX_LOC: PTR (8B) + PTR (8B) + stringA\0 + stringB\0
     if (isInlinePtrAt(z, pos + 8)) {
       const s1Start = pos + 16;
       let s1End = s1Start;
@@ -624,7 +599,6 @@ function scanZoneAssets(state: FastFileZoneState): void {
           const str1 = decodeLatin1(z, s1Start, s1End);
           const str2 = decodeLatin1(z, s2Start, s2End);
 
-          // Check BO2 order: value\0 NAME\0
           if (str2.length >= 2 && str2.length <= 128 && RX_LOC_NAME.test(str2)) {
             items.push({
               id: `ff-loc-${itemCounter++}`,
@@ -638,7 +612,7 @@ function scanZoneAssets(state: FastFileZoneState): void {
             pos = s2End + 1;
             continue;
           }
-          // Check BO1 order: NAME\0 value\0
+
           if (str1.length >= 2 && str1.length <= 128 && RX_LOC_NAME.test(str1)) {
             items.push({
               id: `ff-loc-${itemCounter++}`,
@@ -656,7 +630,6 @@ function scanZoneAssets(state: FastFileZoneState): void {
       }
     }
 
-    // 2b. Check RX_ST: PTR (8B) + cols (4B) + rows (4B) + vptr (8B) + iptr (8B) + name.csv\0
     if (pos + 38 < n && isInlinePtrAt(z, pos + 16) && (isZeroPtrAt(z, pos + 24) || isInlinePtrAt(z, pos + 24))) {
       const cols = view.getInt32(pos + 8, true);
       const rows = view.getInt32(pos + 12, true);
@@ -746,9 +719,6 @@ function scanZoneAssets(state: FastFileZoneState): void {
   state.items = items;
 }
 
-/**
- * Format StringTable cells into clean RFC 4180 CSV text
- */
 export function formatStringTableCsv(cols: number, rows: number, cells: string[]): Uint8Array {
   const lines: string[] = [];
   for (let r = 0; r < rows; r++) {
@@ -763,9 +733,6 @@ export function formatStringTableCsv(cols: number, rows: number, cells: string[]
   return new TextEncoder().encode(lines.join('\n') + '\n');
 }
 
-/**
- * Build zone_info.json summary matching Spet's summary() method
- */
 export function buildZoneSummaryJson(fileName: string, state: FastFileZoneState): Record<string, unknown> {
   const counts: Record<string, number> = {};
   for (const t of state.assetTypes) {
@@ -804,9 +771,6 @@ export function buildZoneSummaryJson(fileName: string, state: FastFileZoneState)
   };
 }
 
-/**
- * Replace an item's payload inside the FastFile zone (exact port of Spet's FastFile.replace)
- */
 export function replaceItemInZoneState(
   state: FastFileZoneState,
   itemId: string,
@@ -864,17 +828,13 @@ export function replaceItemInZoneState(
   }
 }
 
-/**
- * Rebuild a valid BO1 (IWffu100) or BO2 (TAffu100) FastFile binary from FastFileZoneState
- * Exact port of Spet's FastFile.build()
- */
 export function buildT5T6FastFileBinary(state: FastFileZoneState, level: 1 | 6 | 9 = 6): Uint8Array {
   const z = state.zone;
   const xf = [...state.xfile];
   const enc = new TextEncoder();
 
   if (state.isBo1) {
-    // BO1 Xfile header Size needs to equal unpacked size minus 36
+
     if (xf.length >= 9) {
       xf[0] = Math.max(0, z.length - 36);
       const zView = new DataView(z.buffer, z.byteOffset, z.byteLength);
@@ -890,7 +850,7 @@ export function buildT5T6FastFileBinary(state: FastFileZoneState, level: 1 | 6 |
     out.set(compressedZone, 12);
     return out;
   } else {
-    // BO2 (TAffu100) Logic
+
     if (xf.length > 0) {
       xf[0] = z.length;
     }
@@ -914,10 +874,8 @@ export function buildT5T6FastFileBinary(state: FastFileZoneState, level: 1 | 6 |
     }
     xfBuf.set(state.xfileTail, xf.length * 4);
 
-    // Raw deflate (-15) on XFile header
     const blob = deflateSync(xfBuf, { level: 9 });
 
-    // Compress zone in BLOCK_SIZE (0x7FC0) raw-deflate chunks
     const compressedBlocks: Uint8Array[] = [];
     let totalBlocksByteLen = 0;
     for (let o = 0; o < z.length; o += BLOCK_SIZE) {
@@ -947,9 +905,6 @@ export function buildT5T6FastFileBinary(state: FastFileZoneState, level: 1 | 6 |
   }
 }
 
-/**
- * Main T5 / T6 (BO1 / BO2) & IW FastFile Parser
- */
 export function parseT5T6FastFile(
   fileName: string,
   raw: Uint8Array,
@@ -982,7 +937,7 @@ export function parseT5T6FastFile(
 
     try {
       if (isBo1) {
-        // BO1 (IWffu100): Single standard zlib stream starting at offset 0x0C
+
         const decomp = unzlibSync(raw.subarray(12));
         state.zone = decomp;
         state.origZoneLen = decomp.length;
@@ -994,7 +949,7 @@ export function parseT5T6FastFile(
           state.origXfile = [...state.xfile];
         }
       } else {
-        // BO2 (TAffu100): Raw deflate (-15) XFile header at offset 16, followed by 0x7FC0 raw-deflate blocks
+
         const blen = view.getUint32(12, true);
         const xf = inflateSync(raw.subarray(16, 16 + blen));
         const n = Math.floor(xf.length / 4);
@@ -1039,15 +994,12 @@ export function parseT5T6FastFile(
         state.origZoneLen = fullZone.length;
       }
 
-      // Parse XAsset Zone Header & Scan 64-bit Assets (BO1/BO2 MS Store PC)
       parseZoneHeader(state);
       scanZoneAssets(state);
 
-      // Convert scanned FastFileItems into ArchiveEntries
       const entries: ArchiveEntry[] = [];
       const enc = new TextEncoder();
 
-      // If 64-bit T5/T6 items were found (or if it's a valid BO1/BO2 zone)
       if (state.items.length > 0 || !isBo1 || version >= 0x100) {
         const folderPrefixMap: Record<FastFileItem['kind'], string> = {
           rawfile: 'rawfiles',
@@ -1110,7 +1062,6 @@ export function parseT5T6FastFile(
           });
         }
 
-        // Also add zone_info.json, script_strings.txt, and localize.txt summary files
         const summaryObj = buildZoneSummaryJson(fileName, state);
         const summaryBytes = enc.encode(JSON.stringify(summaryObj, null, 2));
         entries.push({
@@ -1168,7 +1119,7 @@ export function parseT5T6FastFile(
           });
         }
       } else {
-        // Fallback for older 32-bit CoD4/WaW IWffu100 files
+
         const zoneText = new TextDecoder('utf-8', { fatal: false }).decode(state.zone);
         const assetRegex =
           /([a-zA-Z0-9_/\\.-]+\.(?:gsc|csc|vision|menu|cfg|str|hlsl|shader|csv|atr|rmb))\x00([\s\S]*?)\x00/g;
@@ -1199,7 +1150,6 @@ export function parseT5T6FastFile(
         }
       }
 
-      // Always include the unpacked .zone memory image at the end for full binary inspection
       entries.push({
         id: 'ff-zone-master',
         name: `${fileName.replace(/\.ff$/i, '')}.zone`,

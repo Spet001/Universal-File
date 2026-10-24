@@ -12,7 +12,7 @@ export interface CodEngineInfo {
 }
 
 export function identifyCodVersion(magic: string, version: number): CodEngineInfo {
-  // Treyarch FastFiles (TAffu100 / TAff0100 / TAff)
+
   if (magic.startsWith('TAff')) {
     if (version === 0x93 || version === 147) {
       return { game: 'Call of Duty: Black Ops II (T6)', engine: 'Treyarch T6', year: 2012, family: 'Treyarch', is64Bit: true };
@@ -32,7 +32,6 @@ export function identifyCodVersion(magic: string, version: number): CodEngineInf
     return { game: `Call of Duty: Treyarch Title (ver ${version})`, engine: 'Treyarch Engine', year: 2015, family: 'Treyarch', is64Bit: true };
   }
 
-  // Infinity Ward / Sledgehammer FastFiles (IWffu100 / IWff0100 / S1ff)
   if (magic.startsWith('IWff') || magic.startsWith('S1ff')) {
     if (version === 5 || version === 6) {
       return { game: 'Call of Duty 4: Modern Warfare (IW3)', engine: 'IW 3.0', year: 2007, family: 'IW', is64Bit: false };
@@ -75,9 +74,6 @@ export function identifyCodVersion(magic: string, version: number): CodEngineInf
   };
 }
 
-/**
- * Universal FastFile parser for T4-T10 and IW3-IW10
- */
 export function parseUniversalFastFile(
   fileName: string,
   raw: Uint8Array,
@@ -88,7 +84,6 @@ export function parseUniversalFastFile(
   const version = raw.length >= 12 ? view.getUint32(8, true) : 0;
   const info = identifyCodVersion(magic, version);
 
-  // If this is T5 or T6 (BO1 / BO2 MS Store or compatible), run Spet's full zone decompiler
   if (magic === 'TAffu100' || (magic === 'IWffu100' && (version === 473 || version === 0x1d9))) {
     const t5t6 = parseT5T6FastFile(fileName, raw, startTime);
     if (t5t6.parsed.entries.length > 0) {
@@ -102,8 +97,6 @@ export function parseUniversalFastFile(
   let decompressedZone: Uint8Array | null = null;
   let decompressMethod = 'Raw';
 
-  // 1. Try finding zlib stream (RFC 1950 0x78 0x01 / 0x9C / 0xDA)
-  // Check standard offsets (0x0C, 0x10, 0x14, 0x20, 0x80, 0x100, 0x200, 0x400)
   const candidateOffsets = [12, 16, 20, 32, 64, 128, 256, 512, 1024];
   for (const off of candidateOffsets) {
     if (off + 2 < raw.length) {
@@ -119,13 +112,12 @@ export function parseUniversalFastFile(
             break;
           }
         } catch {
-          // Continue scanning
+
         }
       }
     }
   }
 
-  // 2. If not found at fixed offsets, scan raw for first valid zlib header up to offset 4096
   if (!decompressedZone) {
     const scanLimit = Math.min(raw.length - 2, 4096);
     for (let i = 12; i < scanLimit; i++) {
@@ -140,13 +132,12 @@ export function parseUniversalFastFile(
             break;
           }
         } catch {
-          // Continue
+
         }
       }
     }
   }
 
-  // 3. Try raw deflate (-15) chunk loop (T6 / IW6 / T7 chunk layout)
   if (!decompressedZone && raw.length > 32) {
     try {
       const blen = view.getUint32(12, true);
@@ -180,21 +171,19 @@ export function parseUniversalFastFile(
         }
       }
     } catch {
-      // Ignored
+
     }
   }
 
-  // If zone stream was successfully decompressed, carve out all contained assets!
   if (decompressedZone && decompressedZone.length > 0) {
     const zone = decompressedZone;
     const n = zone.length;
     let entryIdx = 0;
 
-    // Scan for script markers (\x80GSC or text GSC/CSC), rawfiles, stringtables, vision configs, and sounds
     for (let i = 0; i < n - 8; i++) {
-      // Compiled GSC script (\x80GSC)
+
       if (zone[i] === 0x80 && zone[i + 1] === 0x47 && zone[i + 2] === 0x53 && zone[i + 3] === 0x43) {
-        // Read script len or bound
+
         let end = Math.min(n, i + 65536);
         for (let j = i + 16; j < end - 4; j++) {
           if (zone[j] === 0x80 && zone[j + 1] === 0x47 && zone[j + 2] === 0x53 && zone[j + 3] === 0x43) {
@@ -221,7 +210,6 @@ export function parseUniversalFastFile(
         continue;
       }
 
-      // Rawfile / Config / Menu script text
       if (
         (readAscii(zone, i, 4) === 'maps' || readAscii(zone, i, 4) === 'code' || readAscii(zone, i, 4) === 'ui_m') &&
         zone[i - 1] === 0
@@ -266,7 +254,6 @@ export function parseUniversalFastFile(
         }
       }
 
-      // DDS Texture Header (DDS )
       if (zone[i] === 0x44 && zone[i + 1] === 0x44 && zone[i + 2] === 0x53 && zone[i + 3] === 0x20 && i + 128 <= n) {
         const texView = new DataView(zone.buffer, zone.byteOffset + i, 128);
         const texHeight = texView.getUint32(12, true);
@@ -293,7 +280,6 @@ export function parseUniversalFastFile(
         }
       }
 
-      // RIFF WAVE audio lump
       if (
         zone[i] === 0x52 &&
         zone[i + 1] === 0x49 &&
@@ -323,7 +309,6 @@ export function parseUniversalFastFile(
       }
     }
 
-    // Also include the decompressed zone stream as a master file
     entries.unshift({
       id: 'ff-decompressed-zone',
       name: `${fileName}.zone_unpacked`,

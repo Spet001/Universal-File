@@ -13,9 +13,8 @@ export function parsePlaystationPkg(fileName: string, bytes: Uint8Array, startTi
   const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
   const magic = new TextDecoder('ascii').decode(bytes.subarray(0, 4));
 
-  // Determine PS3, PS4, PS Vita from header revision
   let platform = 'PlayStation 3 (PS3)';
-  const pkgType = view.getUint16(4, false); // Big Endian in Sony headers
+  const pkgType = view.getUint16(4, false);
   if (bytes.length > 0x100 && new TextDecoder('ascii').decode(bytes.subarray(0x40, 0x44)) === 'CUSA') {
     platform = 'PlayStation 4 (PS4)';
   } else if (fileName.toLowerCase().includes('ps4') || fileName.toLowerCase().includes('cusa')) {
@@ -24,7 +23,6 @@ export function parsePlaystationPkg(fileName: string, bytes: Uint8Array, startTi
     platform = 'PlayStation Vita (PS Vita)';
   }
 
-  // Extract Content ID (ASCII at offset 0x30 / 0x40)
   let contentId = '';
   for (let offset of [0x30, 0x40, 0x10]) {
     if (offset + 36 <= bytes.length) {

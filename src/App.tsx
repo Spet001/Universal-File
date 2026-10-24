@@ -127,7 +127,6 @@ export default function App() {
   const [repackTarget, setRepackTarget] = useState<'ZIP' | 'PK3' | 'PAK' | 'WAD' | 'FF'>('FF');
   const [openMenu, setOpenMenu] = useState<string | null>(null);
 
-  // Standalone Zlib Workbench state
   const [zlibInputText, setZlibInputText] = useState<string>(
     '// RFC 1950 Zlib Deflate test block\nsetdvar("r_fullscreen", "1");\nsetdvar("com_maxfps", "250");'
   );
@@ -281,7 +280,7 @@ export default function App() {
         try {
           replaceItemInZoneState(prev.zoneState, entryId, newData, false);
         } catch {
-          // Non-zone metadata entry
+
         }
       }
 
@@ -388,7 +387,6 @@ export default function App() {
       .reduce((acc, e) => acc + e.uncompressedSize, 0);
   }, [archive?.entries, archive?.unpackedZoneSize]);
 
-  // Live Zlib Workbench output
   const zlibBenchResult = useMemo(() => {
     const raw = new TextEncoder().encode(zlibInputText);
     const compressed = zlibSync(raw, { level: zlibLevel as 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 });
@@ -414,7 +412,7 @@ export default function App() {
         if (openMenu) setOpenMenu(null);
       }}
     >
-      {/* Hidden File Input */}
+
       <input
         ref={fileInputRef}
         type="file"
@@ -428,7 +426,6 @@ export default function App() {
         }}
       />
 
-      {/* Drag & Drop Overlay */}
       {isDraggingOver && (
         <div className="pointer-events-none fixed inset-0 z-50 flex items-center justify-center bg-[#06090f]/90">
           <div className="flex flex-col items-center gap-2 border border-[#38bdf8] bg-[#090d14] p-8 text-center font-mono">
@@ -443,11 +440,8 @@ export default function App() {
         </div>
       )}
 
-      {/* ============================================================== */}
-      {/* ZONE A: Native Menu & Telemetry Topbar (h-[28px])              */}
-      {/* ============================================================== */}
       <header className="h-[28px] shrink-0 bg-[#06090f] border-b border-[#182232] px-2.5 flex items-center justify-between text-[11px] font-mono z-30 select-none">
-        {/* Left: Tool Brand + Menu Triggers */}
+
         <div className="flex items-center gap-2 shrink-0">
           <div className="flex items-center gap-1.5 pr-2 select-none">
             <img
@@ -460,7 +454,7 @@ export default function App() {
           </div>
 
           <nav className="relative flex items-center gap-0.5 text-[11px]">
-            {/* FILE MENU */}
+
             <div className="relative">
               <button
                 type="button"
@@ -535,7 +529,6 @@ export default function App() {
               )}
             </div>
 
-            {/* ANALYSIS MENU */}
             <div className="relative">
               <button
                 type="button"
@@ -588,7 +581,6 @@ export default function App() {
               )}
             </div>
 
-            {/* VIEW MENU */}
             <div className="relative">
               <button
                 type="button"
@@ -652,7 +644,6 @@ export default function App() {
               )}
             </div>
 
-            {/* HEX MENU */}
             <button
               type="button"
               onClick={() => setActiveDockTab('hex')}
@@ -663,7 +654,6 @@ export default function App() {
               Hex
             </button>
 
-            {/* HELP MENU */}
             <div className="relative">
               <button
                 type="button"
@@ -731,9 +721,8 @@ export default function App() {
           </nav>
         </div>
 
-        {/* Center/Right: Active Archive Telemetry + Theme Switcher + Load Button */}
         <div className="flex items-center gap-2">
-          {/* Active Container Telemetry */}
+
           <div className="hidden lg:flex items-center gap-1.5 text-[11px] text-[#64748b] truncate max-w-xl">
             {isLoadingArchive ? (
               <span className="text-[#38bdf8] animate-pulse">{loadingStatus}</span>
@@ -754,7 +743,6 @@ export default function App() {
             )}
           </div>
 
-          {/* Theme Selector */}
           <div className="flex items-center gap-1 shrink-0">
             <span className="text-[10px] text-[#64748b]">Theme:</span>
             <select
@@ -770,7 +758,6 @@ export default function App() {
             </select>
           </div>
 
-          {/* Compact Sample Selector Dropdown */}
           <div className="flex items-center gap-1">
             <select
               value={activePresetId}
@@ -803,9 +790,6 @@ export default function App() {
         </div>
       </header>
 
-      {/* ============================================================== */}
-      {/* ZONE B: Quick-Load Ribbon (h-[24px])                            */}
-      {/* ============================================================== */}
       <div className="h-[24px] shrink-0 bg-[#0c121d] border-b border-[#182232] px-2.5 flex items-center gap-1.5 text-[11px] font-mono shrink-0 overflow-x-auto whitespace-nowrap select-none">
         <span className="text-[10px] uppercase tracking-wider text-[#64748b] shrink-0 mr-1">
           Quick Demos:
@@ -832,7 +816,6 @@ export default function App() {
         })}
       </div>
 
-      {/* Warning Alert Strip if any */}
       {archive && archive.warnings.length > 0 && (
         <div className="h-[22px] shrink-0 bg-amber-950/40 border-b border-amber-900/40 px-3 flex items-center gap-1.5 text-[10px] text-amber-300 font-mono">
           <AlertTriangle className="h-3 w-3 text-amber-400 shrink-0" />
@@ -840,15 +823,10 @@ export default function App() {
         </div>
       )}
 
-      {/* ============================================================== */}
-      {/* 3-COLUMN WORKBENCH: Left Dock, Entry Table, Center Workspace   */}
-      {/* ============================================================== */}
       <div className="flex-1 min-h-0 flex overflow-hidden">
-        {/* ============================================================== */}
-        {/* ZONE C: Left Dock Pane (w-[270px] shrink-0 border-r border-[#182232]) */}
-        {/* ============================================================== */}
+
         <aside className="w-[270px] shrink-0 border-r border-[#182232] flex flex-col min-h-0 bg-[#090d14] overflow-hidden select-none">
-          {/* Clean 4-Row Engine Key-Value Table */}
+
           <div className="p-2 border-b border-[#182232] bg-[#070a10] font-mono text-[10px] space-y-1 shrink-0">
             <div className="flex items-center justify-between gap-1">
               <span className="text-[#64748b] uppercase tracking-wider shrink-0 w-[54px]">Engine:</span>
@@ -876,13 +854,11 @@ export default function App() {
             </div>
           </div>
 
-          {/* Directory Tree Header */}
           <div className="h-[22px] px-2 bg-[#0c121d] border-b border-[#182232] flex items-center justify-between text-[10px] font-mono text-[#64748b] uppercase tracking-wider shrink-0">
             <span>Virtual Directories</span>
             <span>{folders.length}</span>
           </div>
 
-          {/* Virtual Directories Tree (100% of remaining vertical height) */}
           <div className="flex-1 min-h-0 overflow-y-auto py-1 font-mono text-[11px] divide-y divide-[#182232]/40 bg-[#090d14]">
             <button
               type="button"
@@ -938,7 +914,6 @@ export default function App() {
             })}
           </div>
 
-          {/* Bottom Injection & Repack Bar */}
           <div className="p-1.5 border-t border-[#182232] bg-[#070a10] space-y-1.5 shrink-0 text-[10px]">
             <button
               type="button"
@@ -973,11 +948,8 @@ export default function App() {
           </div>
         </aside>
 
-        {/* ============================================================== */}
-        {/* ZONE D: Center Workspace                                      */}
-        {/* ============================================================== */}
         <div className="flex-1 flex flex-col min-w-0 bg-[#080b11] overflow-hidden">
-          {/* Horizontal Asset Type Filter Strip (Moved here from Left Sidebar!) */}
+
           <div className="h-[26px] bg-[#0c121d] border-b border-[#182232] px-2 flex items-center gap-1 overflow-x-auto shrink-0 text-[10px] font-mono select-none">
             <span className="text-[#64748b] uppercase tracking-wider text-[9px] mr-1">Filter:</span>
             {(
@@ -1011,11 +983,10 @@ export default function App() {
             ))}
           </div>
 
-          {/* Split: Table Column + Right Inspector / Viewport */}
           <div className="flex-1 min-h-0 flex overflow-hidden">
-            {/* High-Density Archive Entry Table (5-column layout per spec) */}
+
             <section className="w-[480px] 2xl:w-[540px] shrink-0 border-r border-[#182232] flex flex-col bg-[#090d14] min-h-0 h-full overflow-hidden select-none">
-              {/* Search Strip */}
+
               <div className="h-[26px] shrink-0 px-2 bg-[#06090f] border-b border-[#182232] flex items-center justify-between gap-1.5">
                 <div className="relative flex-1">
                   <Search className="w-3 h-3 text-[#64748b] absolute left-1.5 top-1/2 -translate-y-1/2 pointer-events-none" />
@@ -1036,7 +1007,6 @@ export default function App() {
                 </button>
               </div>
 
-              {/* Sticky 22px Header: Entry Path / Lump, Type, Offset, Size, Action */}
               <div className="h-[22px] shrink-0 flex items-center px-2 bg-[#0c121d] border-b border-[#182232] text-[10px] font-mono uppercase tracking-wider text-[#64748b]">
                 <button
                   type="button"
@@ -1074,7 +1044,6 @@ export default function App() {
                 <span className="w-[58px] shrink-0 text-right">Action</span>
               </div>
 
-              {/* Rows (h-[23px] per row, 28-35 rows visible per viewport) */}
               <div className="flex-1 min-h-0 overflow-y-auto divide-y divide-[#182232]/30 bg-[#090d14]">
                 {!archive ? (
                   <div className="p-4 text-center text-[#64748b] text-[11px] font-mono space-y-1.5">
@@ -1098,7 +1067,7 @@ export default function App() {
                             : 'text-slate-300'
                         }`}
                       >
-                        {/* Entry Path / Lump: flex-1 min-w-[140px] truncate */}
+
                         <div className="flex-1 min-w-[140px] truncate flex items-center gap-1.5 pr-2">
                           <img
                             src={getEntryIconUrl(entry)}
@@ -1118,24 +1087,20 @@ export default function App() {
                           )}
                         </div>
 
-                        {/* Type: w-[95px] shrink-0 truncate */}
                         <div className="w-[95px] shrink-0 truncate text-[10px] pl-1">
                           <span className="inline-block px-1 py-0 rounded-[2px] bg-black/40 border border-white/10 text-slate-300 font-semibold text-[9px] tracking-wide">
                             {getCompactTypeTag(entry)}
                           </span>
                         </div>
 
-                        {/* Offset: w-[82px] shrink-0 text-right font-mono */}
                         <div className="w-[82px] shrink-0 text-right text-[#64748b] tabular-nums text-[10px] font-mono">
                           {toHex(entry.offset, 6)}
                         </div>
 
-                        {/* Size: w-[68px] shrink-0 text-right font-mono pr-2 */}
                         <div className="w-[68px] shrink-0 text-right text-[#cbd5e1] tabular-nums text-[10px] font-mono pr-2">
                           {formatBytes(entry.uncompressedSize)}
                         </div>
 
-                        {/* Action: w-[58px] shrink-0 text-right */}
                         <div className="w-[58px] shrink-0 text-right">
                           <button
                             type="button"
@@ -1156,9 +1121,8 @@ export default function App() {
               </div>
             </section>
 
-            {/* Right Center Column: IDE Dock Tabs & Active Viewport */}
             <section className="flex-1 min-w-0 flex flex-col bg-[#080b11] min-h-0 h-full overflow-hidden">
-              {/* Rectangular IDE Dock Tabs */}
+
               <div className="h-[28px] shrink-0 bg-[#06090f] border-b border-[#182232] flex items-center justify-between select-none overflow-x-auto no-scrollbar">
                 <div className="flex items-center h-full shrink-0">
                   {(
@@ -1199,7 +1163,6 @@ export default function App() {
                 )}
               </div>
 
-              {/* Viewport Content */}
               <div className="flex-1 min-h-0 overflow-hidden bg-[#06090f]">
                 {activeDockTab === 'preview' && (
                   selectedEntry ? (
@@ -1244,7 +1207,6 @@ export default function App() {
                   )
                 )}
 
-                {/* BINARY HEADERS */}
                 {activeDockTab === 'headers' && (
                   <div className="h-full overflow-y-auto p-2.5 space-y-2.5 font-mono text-xs">
                     {!archive ? (
@@ -1290,7 +1252,6 @@ export default function App() {
                   </div>
                 )}
 
-                {/* ZLIB TRANSCODER */}
                 {activeDockTab === 'zlib' && (
                   <div className="h-full overflow-y-auto p-2.5 space-y-2.5 font-mono text-xs">
                     <div className="flex items-center justify-between border-b border-[#182232] pb-1.5">
@@ -1360,7 +1321,6 @@ export default function App() {
                   </div>
                 )}
 
-                {/* SUPPORTED FORMATS */}
                 {activeDockTab === 'formats' && (
                   <div className="h-full overflow-y-auto p-2.5 font-mono text-xs">
                     <div className="border border-[#182232] bg-[#090d14]">
@@ -1403,9 +1363,6 @@ export default function App() {
         </div>
       </div>
 
-      {/* ============================================================== */}
-      {/* ZONE E: Global Footer Status Bar (h-[22px])                    */}
-      {/* ============================================================== */}
       <footer className="h-[22px] shrink-0 z-20 bg-[#05070b] border-t border-[#182232] px-3 flex items-center justify-between text-[10px] font-mono text-slate-400 select-none">
         <div className="flex items-center gap-2 truncate">
           <span className="inline-flex items-center gap-1.5">
@@ -1435,7 +1392,6 @@ export default function App() {
         </div>
       </footer>
 
-      {/* About Modal */}
       {showAboutModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4">
           <div className="w-full max-w-lg bg-[#090d14] border border-[#182232] shadow-2xl overflow-hidden font-mono text-xs">
@@ -1488,7 +1444,6 @@ export default function App() {
         </div>
       )}
 
-      {/* Modal for injecting new files or scripts */}
       <ArchiveBuilderModal
         isOpen={isInjectModalOpen}
         onClose={() => setIsInjectModalOpen(false)}

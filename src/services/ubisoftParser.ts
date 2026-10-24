@@ -5,7 +5,7 @@ import { computeCRC32, classifyEntry, formatBytes, toHex } from './archiveParser
 export function isUbisoftForge(bytes: Uint8Array, fileName: string): boolean {
   if (fileName.toLowerCase().endsWith('.forge')) return true;
   if (bytes.length < 12) return false;
-  // "scimitar\0" magic
+
   if (
     bytes[0] === 0x73 &&
     bytes[1] === 0x63 &&
@@ -34,11 +34,11 @@ export function parseUbisoftForge(fileName: string, bytes: Uint8Array, startTime
   let indexOffset = 0;
 
   if (isScimitar && bytes.length >= 0x24) {
-    // Scimitar Header: 8 bytes magic, 4 bytes version, 4 bytes maxFiles, 4 bytes fileCount, 8 bytes indexOffset
+
     fileCount = view.getUint32(16, true);
     indexOffset = Number(view.getBigUint64(20, true));
   } else if (bytes.length >= 0x20) {
-    // Alternative Anvil header
+
     fileCount = view.getUint32(8, true);
     indexOffset = view.getUint32(12, true);
   }
@@ -61,7 +61,7 @@ export function parseUbisoftForge(fileName: string, bytes: Uint8Array, startTime
   let p = indexOffset;
 
   for (let i = 0; i < safeCount && p + 24 <= bytes.length; i++) {
-    // 24 to 32 bytes per entry: resourceId (8), offset (8), compressedSize (4), uncompressedSize (4)
+
     const resourceId = view.getBigUint64(p, true);
     const dataOffset = Number(view.getBigUint64(p + 8, true));
     const compSize = view.getUint32(p + 16, true);

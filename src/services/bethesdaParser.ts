@@ -4,9 +4,9 @@ import { computeCRC32, classifyEntry, formatBytes, toHex } from './archiveParser
 
 export function isBethesdaArchive(bytes: Uint8Array): boolean {
   if (bytes.length < 16) return false;
-  // BSA: "BSA\0" (0x42 0x53 0x41 0x00)
+
   if (bytes[0] === 0x42 && bytes[1] === 0x53 && bytes[2] === 0x41 && bytes[3] === 0x00) return true;
-  // BA2: "BTDX" (0x42 0x54 0x44 0x58)
+
   if (bytes[0] === 0x42 && bytes[1] === 0x54 && bytes[2] === 0x44 && bytes[3] === 0x58) return true;
   return false;
 }
@@ -45,7 +45,6 @@ function parseBsaArchive(fileName: string, bytes: Uint8Array, startTime: number)
   const entries: ArchiveEntry[] = [];
   const safeCount = Math.min(fileCount, 20000);
 
-  // File names block is located after folder records and file records
   let fileNamesOffset = folderRecordOffset + folderCount * 16 + fileCount * 16 + totalFolderNameLength;
   const fileNames: string[] = [];
 
@@ -60,14 +59,12 @@ function parseBsaArchive(fileName: string, bytes: Uint8Array, startTime: number)
     }
   }
 
-  // Parse file records
   let fileRecordPos = folderRecordOffset + folderCount * 16;
   for (let i = 0; i < safeCount && fileRecordPos + 16 <= bytes.length; i++) {
     const rawSize = view.getUint32(fileRecordPos + 8, true);
     const offset = view.getUint32(fileRecordPos + 12, true);
     fileRecordPos += 16;
 
-    // Bit 30 toggle inverts the archive-wide compression setting
     const fileCompressed = (rawSize & (1 << 30)) !== 0 ? !isCompressed : isCompressed;
     const realSize = rawSize & ~(1 << 30);
 
@@ -141,7 +138,6 @@ function parseBa2Archive(fileName: string, bytes: Uint8Array, startTime: number)
     { label: 'Name Table Offset', offset: '0x10', length: 8, value: toHex(nameTableOffset), description: 'File names array location' },
   ];
 
-  // Parse String Table if present
   const fileNames: string[] = [];
   if (nameTableOffset > 0 && nameTableOffset < bytes.length) {
     let p = nameTableOffset;
@@ -161,8 +157,7 @@ function parseBa2Archive(fileName: string, bytes: Uint8Array, startTime: number)
   let recordPos = 24;
 
   for (let i = 0; i < safeCount && recordPos + 36 <= bytes.length; i++) {
-    // General BA2 entry is 36 bytes:
-    // hash (4), ext (4), dirHash (4), flags (4), offset (8), packedSize (4), unpackedSize (4), align (4)
+
     const ext = new TextDecoder('ascii').decode(bytes.subarray(recordPos + 4, recordPos + 8)).replace(/\0/g, '');
     const offset = Number(view.getBigUint64(recordPos + 16, true));
     const packedSize = view.getUint32(recordPos + 24, true);

@@ -34,9 +34,6 @@ export interface BinkVideoInfo {
   frames: BinkFrameEntry[];
 }
 
-/**
- * Universal Bink Video (.bik / .bk2) parser for Call of Duty, DOOM 2016, and modern game cinematics
- */
 export function parseBinkVideo(fileName: string, bytes: Uint8Array, startTime: number): ParsedArchive {
   const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
   const magic = readAscii(bytes, 0, 4);
@@ -60,7 +57,6 @@ export function parseBinkVideo(fileName: string, bytes: Uint8Array, startTime: n
   const audioTracks: BinkAudioTrack[] = [];
   let p = 44;
 
-  // Read audio track descriptors (if numAudioTracks > 0)
   if (numAudioTracks > 0 && numAudioTracks < 32 && p + numAudioTracks * 4 <= bytes.length) {
     for (let a = 0; a < numAudioTracks; a++) {
       const trackFlags = view.getUint32(p, true);
@@ -76,7 +72,6 @@ export function parseBinkVideo(fileName: string, bytes: Uint8Array, startTime: n
     }
   }
 
-  // Read Frame Offset Seek Table
   const frames: BinkFrameEntry[] = [];
   const frameTablePos = p;
   const maxFramesToRead = Math.min(numFrames, 1000);
@@ -85,7 +80,7 @@ export function parseBinkVideo(fileName: string, bytes: Uint8Array, startTime: n
     let prevOffset = 0;
     for (let f = 0; f <= maxFramesToRead; f++) {
       const rawOffset = view.getUint32(frameTablePos + f * 4, true);
-      const offset = rawOffset & ~0x01; // low bit indicates keyframe
+      const offset = rawOffset & ~0x01;
       const isKeyframe = (rawOffset & 0x01) !== 0;
 
       if (f > 0) {
@@ -146,7 +141,6 @@ export function parseBinkVideo(fileName: string, bytes: Uint8Array, startTime: n
   const entries: ArchiveEntry[] = [];
   const enc = new TextEncoder();
 
-  // Create formatted metadata text descriptor
   const binkReport = [
     `// ==========================================`,
     `// RAD Game Tools Bink Video Inspection Report`,
@@ -190,7 +184,6 @@ export function parseBinkVideo(fileName: string, bytes: Uint8Array, startTime: n
     data: repBytes,
   });
 
-  // Include the video file itself with video category
   entries.push({
     id: 'bik-video-stream',
     name: fileName,

@@ -9,17 +9,6 @@ import {
   toHex,
 } from './archiveParser';
 
-/**
- * Universal Game ROM Parser
- * Dedicated support for:
- *  - Nintendo DS / DSi (.nds / .srl / .dsi) with NitroFS (FNT/FAT) filesystem, ARM9/ARM7 binaries, Banner 32x32 icon & 6-language titles
- *  - Game Boy Advance (.gba)
- *  - Game Boy / Game Boy Color (.gb / .gbc)
- *  - Nintendo 64 (.z64 / .n64 / .v64)
- *  - Super Nintendo (.sfc / .smc)
- *  - NES (.nes)
- */
-
 export interface NdsBannerInfo {
   version: number;
   iconWidth: number;
@@ -36,9 +25,6 @@ export interface NdsBannerInfo {
   };
 }
 
-/**
- * Decodes UTF-16 Little Endian string (used in NDS banner titles)
- */
 function decodeUtf16LE(bytes: Uint8Array, offset: number, maxChars: number): string {
   const chars: string[] = [];
   const end = Math.min(bytes.length, offset + maxChars * 2);
@@ -50,9 +36,6 @@ function decodeUtf16LE(bytes: Uint8Array, offset: number, maxChars: number): str
   return chars.join('').trim();
 }
 
-/**
- * Converts 15-bit BGR555 color (used on Nintendo DS / GBA) to [r, g, b, 255]
- */
 function bgr555ToRgba(bgr: number, isTransparent = false): [number, number, number, number] {
   if (isTransparent) return [0, 0, 0, 0];
   const r = (bgr & 0x1f) << 3;
@@ -61,9 +44,6 @@ function bgr555ToRgba(bgr: number, isTransparent = false): [number, number, numb
   return [r, g, b, 255];
 }
 
-/**
- * Decodes Nintendo DS 32x32 4bpp tiled icon from banner data
- */
 export function decodeNdsBanner(bytes: Uint8Array, bannerOffset: number): NdsBannerInfo | null {
   if (bytes.length < bannerOffset + 0x840) return null;
   const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
@@ -73,17 +53,14 @@ export function decodeNdsBanner(bytes: Uint8Array, bannerOffset: number): NdsBan
     return null;
   }
 
-  // 1. Palette: 16 colors (16 * 2 = 32 bytes) at bannerOffset + 0x220
   const paletteColorsRgba: number[][] = [];
   const palOffset = bannerOffset + 0x220;
   for (let c = 0; c < 16; c++) {
     const colorVal = view.getUint16(palOffset + c * 2, true);
-    // Index 0 is transparent in NDS banner icon
+
     paletteColorsRgba.push(bgr555ToRgba(colorVal, c === 0));
   }
 
-  // 2. Icon: 32x32 4bpp bitmap (512 bytes) starting at bannerOffset + 0x20
-  // It is organized as 16 tiles of 8x8 pixels (4x4 tiles)
   const iconPixelData = new Uint8Array(32 * 32 * 4);
   const iconTilesOffset = bannerOffset + 0x20;
 
@@ -116,7 +93,6 @@ export function decodeNdsBanner(bytes: Uint8Array, bannerOffset: number): NdsBan
     }
   }
 
-  // 3. Multi-language titles (at bannerOffset + 0x240, 6 entries of 256 bytes / 128 UTF-16 chars)
   const titleBase = bannerOffset + 0x240;
   const titles = {
     japanese: decodeUtf16LE(bytes, titleBase, 128),
@@ -137,19 +113,14 @@ export function decodeNdsBanner(bytes: Uint8Array, bannerOffset: number): NdsBan
   };
 }
 
-/**
- * Checks if the byte array matches a Nintendo DS ROM header
- */
 export function isNdsRom(bytes: Uint8Array): boolean {
   if (bytes.length < 512) return false;
-  // Check Nintendo Logo CRC or standard NDS header properties
-  // Device capacity at 0x14 should be reasonable (e.g. 0..0x0B -> 1MB to 512MB)
+
   const devCap = bytes[0x14];
   const unitCode = bytes[0x12];
   if (unitCode !== 0x00 && unitCode !== 0x02 && unitCode !== 0x03) return false;
   if (devCap > 0x15) return false;
 
-  // Header size at 0x84 is usually 0x4000 (16384 bytes) or 0x200
   const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
   const arm9Offset = view.getUint32(0x20, true);
   const arm7Offset = view.getUint32(0x30, true);
@@ -163,7 +134,6 @@ export function isNdsRom(bytes: Uint8Array): boolean {
     return true;
   }
 
-  // Also check game code format (4 uppercase alphanumeric chars at 0x0C)
   const gameCode = readAscii(bytes, 0x0c, 4);
   if (/^[A-Z0-9]{4}$/.test(gameCode) && arm9Offset >= 0x200) {
     return true;
@@ -172,9 +142,6 @@ export function isNdsRom(bytes: Uint8Array): boolean {
   return false;
 }
 
-/**
- * Parses Nintendo DS ROM (.nds, .srl, .dsi) and unpacks the NitroFS filesystem
- */
 export function parseNdsRomArchive(
   fileName: string,
   bytes: Uint8Array,
@@ -184,7 +151,6 @@ export function parseNdsRomArchive(
   const warnings: string[] = [];
   const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
 
-  // 1. Header Fields
   const rawTitle = readAscii(bytes, 0, 12).trim();
   const gameCode = readAscii(bytes, 0x0c, 4).trim();
   const makerCode = readAscii(bytes, 0x10, 2).trim();
@@ -258,7 +224,6 @@ export function parseNdsRomArchive(
     description: 'Internal virtual filesystem directory tables',
   });
 
-  // Decode Banner (Icon and localized titles)
   let bannerInfo: NdsBannerInfo | null = null;
   if (bannerOffset > 0 && bannerOffset < bytes.length) {
     bannerInfo = decodeNdsBanner(bytes, bannerOffset);
@@ -277,7 +242,6 @@ export function parseNdsRomArchive(
   const entries: ArchiveEntry[] = [];
   const enc = new TextEncoder();
 
-  // 1. Add ARM9 Binary
   if (arm9Offset > 0 && arm9Offset + arm9Size <= bytes.length && arm9Size > 0) {
     const arm9Bytes = bytes.slice(arm9Offset, arm9Offset + arm9Size);
     entries.push({
@@ -299,7 +263,6 @@ export function parseNdsRomArchive(
     });
   }
 
-  // 2. Add ARM7 Binary
   if (arm7Offset > 0 && arm7Offset + arm7Size <= bytes.length && arm7Size > 0) {
     const arm7Bytes = bytes.slice(arm7Offset, arm7Offset + arm7Size);
     entries.push({
@@ -321,7 +284,6 @@ export function parseNdsRomArchive(
     });
   }
 
-  // 3. Add Cartridge Header dump
   const headerBytes = bytes.slice(0, Math.min(bytes.length, 0x200));
   entries.push({
     id: 'nds-header',
@@ -342,9 +304,8 @@ export function parseNdsRomArchive(
     },
   });
 
-  // 4. If Banner icon present, add it as a previewable texture
   if (bannerInfo) {
-    // Generate an RGBA RAW buffer entry that our AssetPreviewer / texture viewer can inspect
+
     const iconEntry: ArchiveEntry = {
       id: 'nds-banner-icon',
       name: 'banner_icon.rgba',
@@ -366,7 +327,6 @@ export function parseNdsRomArchive(
     };
     entries.push(iconEntry);
 
-    // Multi-language title metadata file
     const titlesText = `Nintendo DS Banner Metadata\n===========================\nEnglish: ${bannerInfo.titles.english || '(none)'}\nJapanese: ${bannerInfo.titles.japanese || '(none)'}\nFrench: ${bannerInfo.titles.french || '(none)'}\nGerman: ${bannerInfo.titles.german || '(none)'}\nItalian: ${bannerInfo.titles.italian || '(none)'}\nSpanish: ${bannerInfo.titles.spanish || '(none)'}\n`;
     const titlesBytes = enc.encode(titlesText);
     entries.push({
@@ -384,9 +344,8 @@ export function parseNdsRomArchive(
     });
   }
 
-  // 5. Unpack NitroFS Virtual Filesystem (FAT + FNT)
   if (fatOffset > 0 && fatOffset + fatSize <= bytes.length && fntOffset > 0 && fntOffset + fntSize <= bytes.length) {
-    // FAT contains array of [uint32 startOffset, uint32 endOffset]
+
     const numFiles = Math.floor(fatSize / 8);
     const fatTable: Array<{ start: number; end: number; size: number }> = [];
 
@@ -397,17 +356,11 @@ export function parseNdsRomArchive(
       fatTable.push({ start: fStart, end: fEnd, size: fSize });
     }
 
-    // FNT Main Directory Table starts at fntOffset
-    // Each directory entry in FNT is 8 bytes:
-    // 0x00..0x03: Sub-table offset (relative to fntOffset)
-    // 0x04..0x05: First file ID in directory
-    // 0x06..0x07: Parent directory ID (or total directory count for root 0xF000)
     if (fntSize >= 8) {
       const rootSubTableOfs = view.getUint32(fntOffset, true);
       const rootFirstFileId = view.getUint16(fntOffset + 4, true);
       const totalDirs = view.getUint16(fntOffset + 6, true);
 
-      // Traversal queue for directories: { dirId, subTableOffset, firstFileId, pathPrefix }
       const dirQueue: Array<{ dirId: number; subTableOfs: number; firstFileId: number; path: string }> = [
         { dirId: 0xf000, subTableOfs: rootSubTableOfs, firstFileId: rootFirstFileId, path: 'data' },
       ];
@@ -426,7 +379,7 @@ export function parseNdsRomArchive(
         while (ptr < fntOffset + fntSize && fileCount < 2000) {
           const typeAndLen = bytes[ptr++];
           if (typeAndLen === 0x00) {
-            // End of directory sub-table
+
             break;
           }
 
@@ -455,7 +408,7 @@ export function parseNdsRomArchive(
               });
             }
           } else {
-            // File entry
+
             const fId = curFileId++;
             if (fId < fatTable.length) {
               const { start: fStart, size: fSize } = fatTable[fId];
@@ -465,7 +418,6 @@ export function parseNdsRomArchive(
               const fullPath = `${curPath}/${entryName}`;
               const { folder, name: cleanName } = splitFolderAndName(fullPath);
 
-              // Specific NDS asset category detection (SDAT, NARC, BMG, NCGR, NSBMD, etc.)
               const lowerName = cleanName.toLowerCase();
               let category = classifyEntry(cleanName, fileData);
 
@@ -540,9 +492,6 @@ export function parseNdsRomArchive(
   };
 }
 
-/**
- * Universal Classic Console ROM Parser (GBA, Game Boy, N64, SNES, NES)
- */
 export function parseClassicConsoleRom(
   fileName: string,
   bytes: Uint8Array,
@@ -558,7 +507,6 @@ export function parseClassicConsoleRom(
   let engineFamily = 'Nintendo Video Game Console';
   let detectedPlatform = 'ROM';
 
-  // 1. Check Game Boy Advance (.gba)
   if (lower.endsWith('.gba') || (bytes.length >= 0xC0 && bytes[0xb2] === 0x96)) {
     detectedPlatform = 'GBA';
     const title = readAscii(bytes, 0xa0, 12).trim();
@@ -590,7 +538,7 @@ export function parseClassicConsoleRom(
       description: 'Header validation byte required by GBA BIOS boot sequence',
     });
   }
-  // 2. Check Game Boy / Game Boy Color (.gb / .gbc)
+
   else if (lower.endsWith('.gb') || lower.endsWith('.gbc')) {
     detectedPlatform = 'GB';
     const title = readAscii(bytes, 0x134, 16).trim();
@@ -623,7 +571,7 @@ export function parseClassicConsoleRom(
       description: 'Memory Bank Controller (MBC1, MBC2, MBC3, MBC5) or ROM Only',
     });
   }
-  // 3. Check Nintendo 64 (.z64, .n64, .v64)
+
   else if (
     lower.endsWith('.z64') ||
     lower.endsWith('.n64') ||
@@ -664,7 +612,7 @@ export function parseClassicConsoleRom(
       description: 'Format encoding layout of N64 cartridge dump',
     });
   }
-  // 4. Check NES (.nes)
+
   else if (bytes.length >= 16 && bytes[0] === 0x4e && bytes[1] === 0x45 && bytes[2] === 0x53 && bytes[3] === 0x1a) {
     detectedPlatform = 'NES';
     const prgSize = bytes[4] * 16384;
@@ -706,7 +654,6 @@ export function parseClassicConsoleRom(
 
   const entries: ArchiveEntry[] = [];
 
-  // Add ROM Manifest
   const manifest = `Classic Console ROM Cartridge Information\n=========================================\nFile Name: ${fileName}\nPlatform: ${detectedPlatform}\nFormat: ${formatName}\nEngine Family: ${engineFamily}\nROM Size: ${formatBytes(bytes.length)} (${bytes.length.toLocaleString()} bytes)\nCRC32: 0x${toHex(computeCRC32(bytes), 8)}\n`;
   const manifestBytes = enc.encode(manifest);
 
@@ -724,7 +671,6 @@ export function parseClassicConsoleRom(
     data: manifestBytes,
   });
 
-  // Add Raw Cartridge Payload
   entries.push({
     id: 'rom-payload',
     name: `${fileName.replace(/\.[^.]+$/, '')}.payload`,

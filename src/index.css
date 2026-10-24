@@ -1,7 +1,7 @@
 @import "tailwindcss";
 
 @layer base {
-  /* Default: Slade Industrial (Amber / Carmine Forge) */
+  
   :root, [data-theme="slade"] {
     --bg-canvas: #080706;
     --bg-panel: #0e0c0a;
@@ -17,7 +17,6 @@
     --font-mono: 'JetBrains Mono', 'Fira Code', ui-monospace, SFMono-Regular, monospace;
   }
 
-  /* Pitch Black (OLED) */
   [data-theme="oled"] {
     --bg-canvas: #000000;
     --bg-panel: #070707;
@@ -32,7 +31,6 @@
     --text-muted: #64748b;
   }
 
-  /* Classic Dark Navy (Cobalt) */
   [data-theme="cobalt"] {
     --bg-canvas: #06090f;
     --bg-panel: #090d14;
@@ -47,7 +45,6 @@
     --text-muted: #64748b;
   }
 
-  /* IDA Classic Dark (Graphite) */
   [data-theme="ida"] {
     --bg-canvas: #141414;
     --bg-panel: #1a1a1a;
@@ -102,7 +99,6 @@
   }
 }
 
-/* Theme Surface Overrides */
 [data-theme] {
   background-color: var(--bg-canvas);
   color: var(--text-main);
@@ -139,7 +135,6 @@
   border-color: var(--border-subtle) !important;
 }
 
-/* Universal Accent Variables Mapping */
 [data-theme] .text-\[\#38bdf8\] {
   color: var(--accent-primary) !important;
 }
@@ -176,7 +171,6 @@
   background-color: color-mix(in srgb, var(--accent-primary) 8%, transparent) !important;
 }
 
-/* Slade Industrial Specific Overrides (Replace remaining cyan highlights) */
 [data-theme="slade"] .text-cyan-400 {
   color: var(--accent-primary) !important;
 }
@@ -200,13 +194,11 @@
   background-color: color-mix(in srgb, var(--accent-primary) 12%, transparent) !important;
 }
 
-/* OLED Specific Overrides */
 [data-theme="oled"] .bg-\[\#38bdf8\] {
   background-color: var(--accent-primary) !important;
   color: #000000 !important;
 }
 
-/* IDA Specific Overrides */
 [data-theme="ida"] .bg-\[\#38bdf8\] {
   background-color: var(--accent-primary) !important;
   color: #141414 !important;

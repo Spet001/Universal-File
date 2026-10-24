@@ -13,29 +13,23 @@ export interface Ps1DiscInfo {
   bootExecutable?: string;
 }
 
-/**
- * PS1 TIM Texture Header & Image Data
- */
 export interface Ps1TimImage {
-  magic: number; // 0x10
+  magic: number;
   bpp: 4 | 8 | 16 | 24;
   hasClut: boolean;
   clutX: number;
   clutY: number;
   clutColors: number;
   clutNumPalettes: number;
-  paletteColorsRgba: number[][]; // Array of [R, G, B, A]
+  paletteColorsRgba: number[][];
   imgX: number;
   imgY: number;
   imgWidth: number;
   imgHeight: number;
   pixelWidth: number;
-  rgbaPixels: Uint8Array; // RGBA Uint8ClampedArray for HTML Canvas
+  rgbaPixels: Uint8Array;
 }
 
-/**
- * Decode a PS1 .TIM Texture Image
- */
 export function decodePs1Tim(data: Uint8Array): Ps1TimImage | null {
   if (data.length < 16) return null;
   const view = new DataView(data.buffer, data.byteOffset, data.byteLength);
@@ -85,7 +79,7 @@ export function decodePs1Tim(data: Uint8Array): Ps1TimImage | null {
   const imgLength = view.getUint32(pos, true);
   const imgX = view.getUint16(pos + 4, true);
   const imgY = view.getUint16(pos + 6, true);
-  const imgWidth = view.getUint16(pos + 8, true); // in 16-bit words
+  const imgWidth = view.getUint16(pos + 8, true);
   const imgHeight = view.getUint16(pos + 10, true);
   pos += 12;
 
@@ -166,20 +160,15 @@ export function decodePs1Tim(data: Uint8Array): Ps1TimImage | null {
   };
 }
 
-/**
- * PS1 BIN / CD-XA disc parser
- */
 export function parsePs1DiscArchive(fileName: string, bytes: Uint8Array, startTime: number): ParsedArchive {
   const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
 
-  // Check if raw 2352 sector image or 2048 sector
   let isRaw2352 = false;
   let sectorSize = 2048;
   let pvdOffset = 0x8000;
   let dataPayloadOffsetInSector = 0;
   let payloadSizePerSector = 2048;
 
-  // Check sync header at sector 0 or sector 16
   const hasSync0 =
     bytes.length >= 12 &&
     bytes[0] === 0x00 &&
@@ -196,14 +185,14 @@ export function parsePs1DiscArchive(fileName: string, bytes: Uint8Array, startTi
   if (hasSync0 || hasSync16) {
     isRaw2352 = true;
     sectorSize = 2352;
-    // Check CD001 at sector 16
+
     const sec16 = 16 * 2352;
     if (sec16 + 24 + 5 <= bytes.length && readAscii(bytes, sec16 + 24 + 1, 5) === 'CD001') {
-      // Mode 2 Form 1 (Sync 12 + Header 4 + Subheader 8 = 24 bytes)
+
       dataPayloadOffsetInSector = 24;
       pvdOffset = sec16 + 24;
     } else if (sec16 + 16 + 5 <= bytes.length && readAscii(bytes, sec16 + 16 + 1, 5) === 'CD001') {
-      // Mode 1 (Sync 12 + Header 4 = 16 bytes)
+
       dataPayloadOffsetInSector = 16;
       pvdOffset = sec16 + 16;
     } else {
@@ -289,7 +278,6 @@ export function parsePs1DiscArchive(fileName: string, bytes: Uint8Array, startTi
         const fullPath = folderPrefix ? `${folderPrefix}/${cleanName}` : cleanName;
         const fileData = readSectorBytes(fileLba, fileSize);
 
-        // Check for SYSTEM.CNF to identify PS1 title
         if (cleanName.toUpperCase() === 'SYSTEM.CNF') {
           const cnfText = new TextDecoder().decode(fileData);
           const match = cnfText.match(/BOOT\s*=\s*cdrom:[\\/]?([^;]+)/i);
@@ -306,7 +294,6 @@ export function parsePs1DiscArchive(fileName: string, bytes: Uint8Array, startTi
           }
         }
 
-        // Check for PS1 TIM texture
         let cat = classifyEntry(cleanName, fileData);
         const metadata: Record<string, string | number | boolean> = {
           lba: fileLba,

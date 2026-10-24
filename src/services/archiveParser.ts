@@ -387,7 +387,6 @@ export const FORMAT_SPECS: FormatSpec[] = [
   },
 ];
 
-// Standard IEEE 802.3 CRC32 lookup
 const CRC_TABLE = new Uint32Array(256);
 for (let i = 0; i < 256; i++) {
   let c = i;
@@ -596,9 +595,6 @@ export function splitFolderAndName(fullPath: string): { folder: string; name: st
   return { folder, name, cleanPath: normalized };
 }
 
-/**
- * 1. Parse DOOM / Quake WAD (IWAD, PWAD, WAD2, WAD3)
- */
 function parseWadArchive(fileName: string, bytes: Uint8Array, startTime: number): ParsedArchive {
   const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
   const magic = readAscii(bytes, 0, 4);
@@ -733,9 +729,6 @@ function parseWadArchive(fileName: string, bytes: Uint8Array, startTime: number)
   };
 }
 
-/**
- * 2. Parse Quake / Half-Life PAK (PACK)
- */
 function parsePakArchive(fileName: string, bytes: Uint8Array, startTime: number): ParsedArchive {
   const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
   const magic = readAscii(bytes, 0, 4);
@@ -815,9 +808,6 @@ function parsePakArchive(fileName: string, bytes: Uint8Array, startTime: number)
   };
 }
 
-/**
- * 3. Parse Call of Duty FastFile (.ff) - Universal T4-T10 & IW3-IW10 engine
- */
 function parseFastFileArchive(fileName: string, bytes: Uint8Array, startTime: number): ParsedArchive {
   const { parsed, zoneState } = parseUniversalFastFile(fileName, bytes, startTime);
   if (zoneState) {
@@ -826,9 +816,6 @@ function parseFastFileArchive(fileName: string, bytes: Uint8Array, startTime: nu
   return parsed;
 }
 
-/**
- * 4. Parse ZIP / Quake III PK3 / Doom 3 PK4
- */
 function parseZipOrPk3Archive(
   fileName: string,
   bytes: Uint8Array,
@@ -896,9 +883,6 @@ function parseZipOrPk3Archive(
   };
 }
 
-/**
- * 5. Parse ISO 9660 Optical Disc Image (.iso)
- */
 function parseIsoArchive(fileName: string, bytes: Uint8Array, startTime: number): ParsedArchive {
   const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
   const pvdOffset = 0x8000;
@@ -1014,9 +998,6 @@ function parseIsoArchive(fileName: string, bytes: Uint8Array, startTime: number)
   };
 }
 
-/**
- * 6. Parse Ryu Ga Gotoku / Yakuza PARC (.par) Archive
- */
 function parseParArchive(fileName: string, bytes: Uint8Array, startTime: number): ParsedArchive {
   const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
   const magic = readAscii(bytes, 0, 4);
@@ -1109,9 +1090,6 @@ function parseParArchive(fileName: string, bytes: Uint8Array, startTime: number)
   };
 }
 
-/**
- * 7. Parse EA BIGF / BIG4 (.big) Archive
- */
 function parseBigArchive(fileName: string, bytes: Uint8Array, startTime: number): ParsedArchive {
   const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
   const magic = readAscii(bytes, 0, 4);
@@ -1193,9 +1171,6 @@ function parseBigArchive(fileName: string, bytes: Uint8Array, startTime: number)
   };
 }
 
-/**
- * 8. Parse RAR v4 / v5 Archive (Rar!\x1a\x07)
- */
 function parseRarArchive(fileName: string, bytes: Uint8Array, startTime: number): ParsedArchive {
   const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
   const isRar5 = bytes.length >= 8 && bytes[6] === 0x01 && bytes[7] === 0x00;
@@ -1290,9 +1265,6 @@ function parseRarArchive(fileName: string, bytes: Uint8Array, startTime: number)
   };
 }
 
-/**
- * 9. Parse Valve VPK (0x55AA1234)
- */
 function parseVpkArchive(fileName: string, bytes: Uint8Array, startTime: number): ParsedArchive {
   const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
   const version = view.getUint32(4, true);
@@ -1404,9 +1376,6 @@ function parseVpkArchive(fileName: string, bytes: Uint8Array, startTime: number)
   };
 }
 
-/**
- * 10. Universal Zlib Decompressor & Binary Signature Carver
- */
 function parseZlibAndCarveStreams(fileName: string, bytes: Uint8Array, startTime: number): ParsedArchive {
   const entries: ArchiveEntry[] = [];
   const warnings: string[] = [];
@@ -1433,7 +1402,7 @@ function parseZlibAndCarveStreams(fileName: string, bytes: Uint8Array, startTime
         data: decompressed,
       });
     } catch {
-      // Proceed to multi-stream scan
+
     }
   }
 
@@ -1533,7 +1502,7 @@ function parseZlibAndCarveStreams(fileName: string, bytes: Uint8Array, startTime
           i += 32;
         }
       } catch {
-        // Not a standalone zlib stream
+
       }
     }
   }
@@ -1588,61 +1557,48 @@ function parseZlibAndCarveStreams(fileName: string, bytes: Uint8Array, startTime
   };
 }
 
-/**
- * Main Universal Dispatcher
- */
 export function parseGameArchive(fileName: string, bytes: Uint8Array): ParsedArchive {
   const startTime = performance.now();
   const magic4 = readAscii(bytes, 0, 4);
   const magic8 = readAscii(bytes, 0, 8);
   const lower = fileName.toLowerCase();
 
-  // 0a. Check Bethesda Softworks BSA / BA2
   if (isBethesdaArchive(bytes) || lower.endsWith('.bsa') || lower.endsWith('.ba2')) {
     return parseBethesdaArchive(fileName, bytes, startTime);
   }
 
-  // 0b. Check Ubisoft FORGE (Assassin's Creed / Anvil)
   if (isUbisoftForge(bytes, fileName)) {
     return parseUbisoftForge(fileName, bytes, startTime);
   }
 
-  // 0c. Check Rockstar RAGE RPF (GTA IV, GTA V, RDR, Max Payne 3)
   if (isRockstarRage(bytes, fileName)) {
     return parseRockstarRage(fileName, bytes, startTime);
   }
 
-  // 0d. Check Minecraft Mod JAR (.jar)
   if (isMinecraftJar(bytes, fileName)) {
     return parseMinecraftJar(fileName, bytes, startTime);
   }
 
-  // 0e. Check PlayStation Package (.pkg)
   if (isPlaystationPkg(bytes, fileName)) {
     return parsePlaystationPkg(fileName, bytes, startTime);
   }
 
-  // 0f. Check CRIWARE Audio & Video (.awb, .acb, .usm, .adx, .hca)
   if (isCriwareArchive(bytes, fileName)) {
     return parseCriwareArchive(fileName, bytes, startTime);
   }
 
-  // 0g. Check FromSoftware BND3, BND4 & DCX (.bnd, .bnd4, .dcx)
   if (isFromSoftArchive(bytes, fileName)) {
     return parseFromSoftArchive(fileName, bytes, startTime);
   }
 
-  // 0h. Check Square Enix Sound Archive & PFS (.sdat, .pfs, .pf8)
   if (isSquareArchive(bytes, fileName)) {
     return parseSquareArchive(fileName, bytes, startTime);
   }
 
-  // 0i. Check Ren'Py Archive (.rpa / RPA-3.0 / RPA-2.0)
   if (isRenpyArchive(bytes, fileName)) {
     return parseRenpyArchive(fileName, bytes, startTime);
   }
 
-  // 1. Check RAD Game Tools Bink Video (.bik / .bk2)
   if (
     magic4.startsWith('BIK') ||
     magic4.startsWith('KB2') ||
@@ -1654,12 +1610,11 @@ export function parseGameArchive(fileName: string, bytes: Uint8Array): ParsedArc
     }
   }
 
-  // 2. Check id Tech 6 DOOM 2016 (.resource, .index, .patch, .bmodel)
   if (
-    (bytes.length >= 4 && bytes[0] === 0x1b && bytes[1] === 0x4c && bytes[2] === 0x4d && bytes[3] === 0x42) || // \x1bLMB
+    (bytes.length >= 4 && bytes[0] === 0x1b && bytes[1] === 0x4c && bytes[2] === 0x4d && bytes[3] === 0x42) ||
     (bytes.length >= 12 &&
-      ((bytes[1] === 0x53 && bytes[2] === 0x45 && bytes[3] === 0x52) || // SER
-        (bytes[0] === 0x52 && bytes[1] === 0x45 && bytes[2] === 0x53))) || // RES
+      ((bytes[1] === 0x53 && bytes[2] === 0x45 && bytes[3] === 0x52) ||
+        (bytes[0] === 0x52 && bytes[1] === 0x45 && bytes[2] === 0x53))) ||
     lower.endsWith('.resource') ||
     lower.endsWith('.bmodel')
   ) {
@@ -1672,13 +1627,12 @@ export function parseGameArchive(fileName: string, bytes: Uint8Array): ParsedArc
     }
   }
 
-  // 3. Check Unreal Engine 4 / 5 (.pak, .uasset, .umap)
   const isUAssetMagic =
     bytes.length >= 4 &&
     bytes[0] === 0xc1 &&
     bytes[1] === 0x83 &&
     bytes[2] === 0x2a &&
-    bytes[3] === 0x9e; // 0x9E2A83C1
+    bytes[3] === 0x9e;
   const hasPakFooter =
     bytes.length >= 44 &&
     (new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength).getUint32(
@@ -1701,13 +1655,11 @@ export function parseGameArchive(fileName: string, bytes: Uint8Array): ParsedArc
     return parseUnrealArchive(fileName, bytes, startTime);
   }
 
-  // 4. Check Unity Engine (.assets SerializedFile, .unity3d, .bundle, UnityFS)
   const isUnityFs = magic8.startsWith('UnityFS') || magic8.startsWith('UnityWe') || magic8.startsWith('UnityRa');
   if (isUnityFs || lower.endsWith('.assets') || lower.endsWith('.sharedassets') || lower.endsWith('.unity3d')) {
     return parseUnityArchive(fileName, bytes, startTime);
   }
 
-  // 5. Check Final Fantasy XIII Trilogy (white_data, filelist*.bin, white_img*.bin, .wbd, .wdb)
   const isFf13Name =
     lower.includes('white_') ||
     lower.includes('filelist') ||
@@ -1717,7 +1669,6 @@ export function parseGameArchive(fileName: string, bytes: Uint8Array): ParsedArc
     return parseFf13Archive(fileName, bytes, startTime);
   }
 
-  // 6. Check Xbox 360 Executable (XEX2, XEX1, XEX0, default.xex)
   if (
     (magic4 === 'XEX2' || magic4 === 'XEX1' || magic4 === 'XEX0' || magic4 === 'XEXP' || lower.endsWith('.xex')) &&
     bytes.length >= 24
@@ -1725,7 +1676,6 @@ export function parseGameArchive(fileName: string, bytes: Uint8Array): ParsedArc
     return parseXbox360Xex(fileName, bytes, startTime);
   }
 
-  // 7. Check Xbox 360 Games on Demand (GOD) & XContent (LIVE, PIRS, CON , GDFX Disc)
   const isGodSignature = magic4 === 'LIVE' || magic4 === 'PIRS' || magic4 === 'CON ';
   const gdfxCheck = isGdfxFilesystem(bytes);
   if (
@@ -1741,7 +1691,6 @@ export function parseGameArchive(fileName: string, bytes: Uint8Array): ParsedArc
     }
   }
 
-  // 8. Check Xbox One / Series, Windows GDK PC, and UWP Packages (.appx, .appxbundle, .msix, .msixbundle, .xvd, .xvc)
   const isAppxExt =
     lower.endsWith('.appx') ||
     lower.endsWith('.appxbundle') ||
@@ -1762,14 +1711,12 @@ export function parseGameArchive(fileName: string, bytes: Uint8Array): ParsedArc
     return parseXboxGdkAppxArchive(fileName, bytes, startTime);
   }
 
-  // 9. Check Nintendo DS / DSi ROM (.nds, .srl, .dsi) with NitroFS
   if (isNdsRom(bytes) || lower.endsWith('.nds') || lower.endsWith('.srl') || lower.endsWith('.dsi')) {
     if (bytes.length >= 0x200) {
       return parseNdsRomArchive(fileName, bytes, startTime);
     }
   }
 
-  // 10. Check Classic Console ROMs (.gba, .gb, .gbc, .n64, .z64, .v64, .sfc, .smc, .nes)
   const isRomExt =
     lower.endsWith('.gba') ||
     lower.endsWith('.gb') ||
@@ -1788,7 +1735,6 @@ export function parseGameArchive(fileName: string, bytes: Uint8Array): ParsedArc
     }
   }
 
-  // 11. Check Sony PlayStation 1 Disc Image (2352 raw CD-XA sync bytes, SYSTEM.CNF, or PS1 ISO)
   const isPs1Sync =
     bytes.length >= 16 * 2352 + 12 &&
     bytes[0] === 0x00 &&
@@ -1799,53 +1745,44 @@ export function parseGameArchive(fileName: string, bytes: Uint8Array): ParsedArc
     return parsePs1DiscArchive(fileName, bytes, startTime);
   }
 
-  // 7. Check Call of Duty FastFile (.ff) - TAffu100, IWffu100, TAff0100, IWff0100 (T4-T10, IW3-IW10)
   if (magic8.startsWith('IWff') || magic8.startsWith('TAff') || magic8.startsWith('S1ff') || lower.endsWith('.ff')) {
     if (bytes.length >= 12 && (magic8.startsWith('IWff') || magic8.startsWith('TAff') || magic8.startsWith('S1ff'))) {
       return parseFastFileArchive(fileName, bytes, startTime);
     }
   }
 
-  // 8. Check DOOM / Quake WAD (IWAD, PWAD, WAD2, WAD3)
   if (magic4 === 'IWAD' || magic4 === 'PWAD' || magic4 === 'WAD2' || magic4 === 'WAD3') {
     return parseWadArchive(fileName, bytes, startTime);
   }
 
-  // 9. Check Quake / Half-Life PAK (PACK)
   if (magic4 === 'PACK' && bytes.length >= 12) {
     return parsePakArchive(fileName, bytes, startTime);
   }
 
-  // 10. Check PK3 / PK4 / ZIP (PK\x03\x04)
   if (bytes.length >= 4 && bytes[0] === 0x50 && bytes[1] === 0x4b && bytes[2] === 0x03 && bytes[3] === 0x04) {
     return parseZipOrPk3Archive(fileName, bytes, startTime);
   }
 
-  // 11. Check ISO 9660 (Sector 16 / 0x8000 has \x01CD001)
   if (bytes.length > 0x8006 && readAscii(bytes, 0x8001, 5) === 'CD001') {
-    // Check if PlayStation disc
+
     if (readAscii(bytes, 0x8008, 32).includes('PLAYSTATION')) {
       return parsePs1DiscArchive(fileName, bytes, startTime);
     }
     return parseIsoArchive(fileName, bytes, startTime);
   }
 
-  // 12. Check Ryu Ga Gotoku PARC (.par)
   if (magic4 === 'PARC' && bytes.length >= 16) {
     return parseParArchive(fileName, bytes, startTime);
   }
 
-  // 13. Check EA BIGF / BIG4 (.big)
   if ((magic4 === 'BIGF' || magic4 === 'BIG4') && bytes.length >= 16) {
     return parseBigArchive(fileName, bytes, startTime);
   }
 
-  // 14. Check Valve VPK (0x55AA1234 -> 34 12 AA 55)
   if (bytes.length >= 12 && bytes[0] === 0x34 && bytes[1] === 0x12 && bytes[2] === 0xaa && bytes[3] === 0x55) {
     return parseVpkArchive(fileName, bytes, startTime);
   }
 
-  // 15. Check RAR v4 / v5 (Rar!\x1a\x07)
   if (
     bytes.length >= 7 &&
     bytes[0] === 0x52 &&
@@ -1858,13 +1795,9 @@ export function parseGameArchive(fileName: string, bytes: Uint8Array): ParsedArc
     return parseRarArchive(fileName, bytes, startTime);
   }
 
-  // 16. Universal Zlib & Proprietary Stream Carver
   return parseZlibAndCarveStreams(fileName, bytes, startTime);
 }
 
-/**
- * Repack / Export Archive in Target Game Format (.zip, .pk3, .pak, .wad, .ff)
- */
 export function repackArchiveAsFormat(
   entries: ArchiveEntry[],
   targetFormat: 'ZIP' | 'PK3' | 'PAK' | 'WAD' | 'FF',
@@ -1954,7 +1887,6 @@ export function repackArchiveAsFormat(
     return { bytes: out, extension: '.wad', mimeType: 'application/octet-stream' };
   }
 
-  // Target Format === 'FF': If we have an active T5/T6 zoneState, rebuild exact BO1/BO2 FastFile binary!
   if (zoneState) {
     const built = buildT5T6FastFileBinary(zoneState, 6);
     return {

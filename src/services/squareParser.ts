@@ -6,11 +6,11 @@ export function isSquareArchive(bytes: Uint8Array, fileName: string): boolean {
   const lower = fileName.toLowerCase();
   if (lower.endsWith('.sdat') || lower.endsWith('.pfs') || lower.endsWith('.pf8') || lower.endsWith('.dat')) {
     if (bytes.length >= 4) {
-      // "SDAT"
+
       if (bytes[0] === 0x53 && bytes[1] === 0x44 && bytes[2] === 0x41 && bytes[3] === 0x54) return true;
-      // "PFS "
+
       if (bytes[0] === 0x50 && bytes[1] === 0x46 && bytes[2] === 0x53 && (bytes[3] === 0x20 || bytes[3] === 0x00)) return true;
-      // "pf8 "
+
       if (bytes[0] === 0x70 && bytes[1] === 0x66 && bytes[2] === 0x38 && bytes[3] === 0x20) return true;
     }
   }
@@ -31,10 +31,6 @@ export function parseSquareArchive(fileName: string, bytes: Uint8Array, startTim
   return parsePfsArchive(fileName, bytes, startTime);
 }
 
-/**
- * 1. Nintendo DS / Square Enix Sound Data Archive (SDAT)
- * Used in Final Fantasy III, IV, XII RW, The World Ends With You, Dragon Quest IV/V/VI/IX, Kingdom Hearts 358/2
- */
 function parseSdatArchive(fileName: string, bytes: Uint8Array, startTime: number): ParsedArchive {
   const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
   const version = bytes.length >= 8 ? view.getUint16(6, true) : 0x0100;
@@ -51,12 +47,11 @@ function parseSdatArchive(fileName: string, bytes: Uint8Array, startTime: number
   const fileOffset = bytes.length >= 44 ? view.getUint32(40, true) : 0;
   const fileSizeBlock = bytes.length >= 48 ? view.getUint32(44, true) : 0;
 
-  // Read symbols from SYMB block if present
   const symbolMap = new Map<number, string>();
   if (symbOffset > 0 && symbOffset + 8 < bytes.length) {
     const symbMagic = new TextDecoder('ascii').decode(bytes.subarray(symbOffset, symbOffset + 4));
     if (symbMagic === 'SYMB') {
-      // Walk string offsets
+
       const sView = new DataView(bytes.buffer, bytes.byteOffset + symbOffset, Math.min(bytes.byteLength - symbOffset, symbSize || 65536));
       let strSearch = symbOffset + 0x20;
       let symbolIdx = 0;
@@ -76,7 +71,6 @@ function parseSdatArchive(fileName: string, bytes: Uint8Array, startTime: number
     }
   }
 
-  // Parse FAT table (File Allocation Table)
   let fileCount = 0;
   const fatRecords: { offset: number; size: number }[] = [];
 
@@ -112,7 +106,6 @@ function parseSdatArchive(fileName: string, bytes: Uint8Array, startTime: number
     const safeEnd = Math.min(bytes.length, absOffset + size);
     const payload = absOffset < bytes.length ? bytes.subarray(absOffset, safeEnd) : new Uint8Array(0);
 
-    // Identify audio lump type
     let ext = 'bin';
     let folder = 'sound';
     let typeDesc = 'Raw Audio Lump';
@@ -171,10 +164,6 @@ function parseSdatArchive(fileName: string, bytes: Uint8Array, startTime: number
   };
 }
 
-/**
- * 2. Square Enix PFS / pf8 Archive Container
- * Used across Final Fantasy XI, Kingdom Hearts, Dragon Quest, and Luminous/Crystal Tools
- */
 function parsePfsArchive(fileName: string, bytes: Uint8Array, startTime: number): ParsedArchive {
   const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
   const magic = new TextDecoder('ascii').decode(bytes.subarray(0, 4));
@@ -201,7 +190,6 @@ function parsePfsArchive(fileName: string, bytes: Uint8Array, startTime: number)
     const uncompSize = view.getUint32(pos + 8, true);
     const flags = view.getUint32(pos + 12, true);
 
-    // Read relative filename at pos + 16 (16 bytes null-terminated)
     let rawName = '';
     let end = pos + 16;
     while (end < pos + 32 && bytes[end] !== 0) end++;
@@ -223,7 +211,7 @@ function parsePfsArchive(fileName: string, bytes: Uint8Array, startTime: number)
       try {
         payload = unzlibSync(payload);
       } catch {
-        // Fall back to compressed payload
+
       }
     }
 

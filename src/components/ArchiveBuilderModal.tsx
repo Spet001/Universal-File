@@ -48,7 +48,7 @@ export const ArchiveBuilderModal: React.FC<ArchiveBuilderModalProps> = ({
         </div>
 
         <div className="p-4 space-y-4 text-xs">
-          {/* Option 1: Upload raw files from disk */}
+
           <div className="p-3 bg-[#06090f] border border-[#182232] flex items-center justify-between gap-3">
             <div>
               <div className="text-[11px] font-semibold text-slate-200">Import External File(s) from Disk</div>
@@ -73,7 +73,6 @@ export const ArchiveBuilderModal: React.FC<ArchiveBuilderModalProps> = ({
             </label>
           </div>
 
-          {/* Option 2: Create new script/lump in-place */}
           <form onSubmit={handleSubmit} className="space-y-3">
             <div>
               <label className="block text-[10px] font-medium text-slate-400 mb-1">

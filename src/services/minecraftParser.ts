@@ -4,7 +4,7 @@ import { computeCRC32, classifyEntry, formatBytes } from './archiveParser';
 
 export function isMinecraftJar(bytes: Uint8Array, fileName: string): boolean {
   if (fileName.toLowerCase().endsWith('.jar')) return true;
-  // ZIP PK\x03\x04
+
   if (bytes.length >= 4 && bytes[0] === 0x50 && bytes[1] === 0x4b && bytes[2] === 0x03 && bytes[3] === 0x04) {
     if (fileName.toLowerCase().includes('mod') || fileName.toLowerCase().includes('minecraft')) {
       return true;
@@ -23,7 +23,6 @@ export function parseMinecraftJar(fileName: string, bytes: Uint8Array, startTime
 
   const filePaths = Object.keys(unzipped);
 
-  // Detect modloader ecosystem
   let modloader = 'Vanilla / Plain Java Library';
   let modId = 'unknown';
   let modName = fileName;
@@ -37,7 +36,7 @@ export function parseMinecraftJar(fileName: string, bytes: Uint8Array, startTime
       modName = meta.name || modName;
       modVersion = meta.version || modVersion;
     } catch {
-      // ignore JSON parse errors
+
     }
   } else if ('quilt.mod.json' in unzipped) {
     modloader = 'Quilt Mod';

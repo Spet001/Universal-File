@@ -24,28 +24,27 @@ describe('Universal Game Archive Parsers Suite', () => {
   });
 
   it('2. Parses Bethesda BSA (v104 Skyrim/FO3/FNV) and BA2 (Fallout 4 / Starfield)', () => {
-    // Construct synthetic BSA header: "BSA\0" + version 104 (0x68) + folderRecordOffset 0x24 + flags + 1 folder + 1 file
+
     const bsa = new Uint8Array(256);
-    bsa[0] = 0x42; bsa[1] = 0x53; bsa[2] = 0x41; bsa[3] = 0x00; // BSA\0
+    bsa[0] = 0x42; bsa[1] = 0x53; bsa[2] = 0x41; bsa[3] = 0x00;
     const view = new DataView(bsa.buffer);
-    view.setUint32(4, 0x68, true); // v104
-    view.setUint32(8, 0x24, true); // folderRecordOffset
-    view.setUint32(12, 0x00, true); // flags
-    view.setUint32(16, 1, true); // folderCount
-    view.setUint32(20, 1, true); // fileCount
+    view.setUint32(4, 0x68, true);
+    view.setUint32(8, 0x24, true);
+    view.setUint32(12, 0x00, true);
+    view.setUint32(16, 1, true);
+    view.setUint32(20, 1, true);
 
     expect(isBethesdaArchive(bsa)).toBe(true);
     const parsedBsa = parseBethesdaArchive('Skyrim - Textures.bsa', bsa, performance.now());
     expect(parsedBsa.formatId).toBe('BSA');
     expect(parsedBsa.engineFamily).toContain('Bethesda');
 
-    // Construct synthetic BA2 header: "BTDX" + version 1 + "GNRL"
     const ba2 = new Uint8Array(256);
-    ba2[0] = 0x42; ba2[1] = 0x54; ba2[2] = 0x44; ba2[3] = 0x58; // BTDX
+    ba2[0] = 0x42; ba2[1] = 0x54; ba2[2] = 0x44; ba2[3] = 0x58;
     const bView = new DataView(ba2.buffer);
-    bView.setUint32(4, 1, true); // v1
-    ba2[8] = 0x47; ba2[9] = 0x4e; ba2[10] = 0x52; ba2[11] = 0x4c; // GNRL
-    bView.setUint32(12, 0, true); // fileCount
+    bView.setUint32(4, 1, true);
+    ba2[8] = 0x47; ba2[9] = 0x4e; ba2[10] = 0x52; ba2[11] = 0x4c;
+    bView.setUint32(12, 0, true);
 
     expect(isBethesdaArchive(ba2)).toBe(true);
     const parsedBa2 = parseBethesdaArchive('Fallout4 - Main.ba2', ba2, performance.now());
@@ -58,9 +57,9 @@ describe('Universal Game Archive Parsers Suite', () => {
     const encoder = new TextEncoder();
     forge.set(encoder.encode('scimitar\0'), 0);
     const view = new DataView(forge.buffer);
-    view.setUint32(12, 27, true); // version
-    view.setUint32(16, 2, true); // fileCount
-    view.setBigUint64(20, 64n, true); // indexOffset
+    view.setUint32(12, 27, true);
+    view.setUint32(16, 2, true);
+    view.setBigUint64(20, 64n, true);
 
     expect(isUbisoftForge(forge, 'AssassinsCreed.forge')).toBe(true);
     const parsedForge = parseUbisoftForge('AssassinsCreed.forge', forge, performance.now());
@@ -70,11 +69,11 @@ describe('Universal Game Archive Parsers Suite', () => {
 
   it('4. Parses Rockstar RAGE Package (RPF2/RPF7 GTA IV & GTA V)', () => {
     const rpf = new Uint8Array(256);
-    rpf[0] = 0x52; rpf[1] = 0x50; rpf[2] = 0x46; rpf[3] = 0x37; // RPF7
+    rpf[0] = 0x52; rpf[1] = 0x50; rpf[2] = 0x46; rpf[3] = 0x37;
     const view = new DataView(rpf.buffer);
-    view.setUint32(4, 2, true); // entryCount
-    view.setUint32(8, 32, true); // namesLength
-    view.setUint32(12, 0, true); // encryption none
+    view.setUint32(4, 2, true);
+    view.setUint32(8, 32, true);
+    view.setUint32(12, 0, true);
 
     expect(isRockstarRage(rpf, 'update.rpf')).toBe(true);
     const parsedRpf = parseRockstarRage('update.rpf', rpf, performance.now());
@@ -103,13 +102,12 @@ describe('Universal Game Archive Parsers Suite', () => {
 
   it('6. Parses Sony PlayStation PKG (\\x7fPKG header & PARAM.SFO mapping)', () => {
     const pkg = new Uint8Array(512);
-    pkg[0] = 0x7f; pkg[1] = 0x50; pkg[2] = 0x4b; pkg[3] = 0x47; // \x7fPKG
+    pkg[0] = 0x7f; pkg[1] = 0x50; pkg[2] = 0x4b; pkg[3] = 0x47;
     const view = new DataView(pkg.buffer);
-    view.setUint16(4, 1, false); // Big-Endian pkg revision
-    view.setUint32(0x14, 5, false); // 5 items
-    view.setUint32(0x18, 0x200, false); // data offset
+    view.setUint16(4, 1, false);
+    view.setUint32(0x14, 5, false);
+    view.setUint32(0x18, 0x200, false);
 
-    // Write ASCII Content ID at offset 0x30
     const enc = new TextEncoder();
     pkg.set(enc.encode('UP0001-CUSA00001_00-0000000000000000'), 0x30);
 
@@ -121,26 +119,24 @@ describe('Universal Game Archive Parsers Suite', () => {
   });
 
   it('7. Parses CRIWARE Audio & Video (AWB AFS2, ACB @UTF, USM CRID, ADX, HCA)', () => {
-    // 7a. AFS2 AWB
+
     const awb = new Uint8Array(256);
     awb.set(new TextEncoder().encode('AFS2'), 0);
     const aView = new DataView(awb.buffer);
-    awb[4] = 2; // version 2
-    awb[5] = 4; // 4-byte offsets
-    aView.setUint32(8, 2, true); // 2 waves
-    aView.setUint32(12, 0x20, true); // alignment 32
+    awb[4] = 2;
+    awb[5] = 4;
+    aView.setUint32(8, 2, true);
+    aView.setUint32(12, 0x20, true);
 
-    // Offsets table: 2 IDs (4 bytes) at 0x10 -> offsets table at 0x14
-    aView.setUint32(0x14, 0x40, true); // track 0
-    aView.setUint32(0x18, 0x80, true); // track 1
-    aView.setUint32(0x1C, 0xC0, true); // end
+    aView.setUint32(0x14, 0x40, true);
+    aView.setUint32(0x18, 0x80, true);
+    aView.setUint32(0x1C, 0xC0, true);
 
     expect(isCriwareArchive(awb, 'bgm.awb')).toBe(true);
     const parsedAwb = parseCriwareArchive('bgm.awb', awb, performance.now());
     expect(parsedAwb.formatId).toBe('CRIWARE');
     expect(parsedAwb.entries.length).toBe(2);
 
-    // 7b. USM Movie (CRID)
     const usm = new Uint8Array(128);
     usm.set(new TextEncoder().encode('CRID'), 0);
     const uView = new DataView(usm.buffer);
@@ -151,10 +147,9 @@ describe('Universal Game Archive Parsers Suite', () => {
     expect(parsedUsm.formatId).toBe('CRIWARE');
     expect(parsedUsm.entries.some((e) => e.name.endsWith('.m2v'))).toBe(true);
 
-    // 7c. ADX Audio
     const adx = new Uint8Array(64);
-    adx[0] = 0x80; adx[1] = 0x00; // ADX signature
-    adx[7] = 2; // stereo
+    adx[0] = 0x80; adx[1] = 0x00;
+    adx[7] = 2;
     new DataView(adx.buffer).setUint32(8, 44100, false);
 
     expect(isCriwareArchive(adx, 'sound.adx')).toBe(true);
@@ -164,20 +159,19 @@ describe('Universal Game Archive Parsers Suite', () => {
   });
 
   it('8. Parses FromSoftware Binder (BND3, BND4) & DCX Deflate Envelope', () => {
-    // 8a. BND4 Archive
+
     const bnd4 = new Uint8Array(256);
     bnd4.set(new TextEncoder().encode('BND4'), 0);
     const bView = new DataView(bnd4.buffer);
-    bView.setBigUint64(12, 1n, true); // 1 file
+    bView.setBigUint64(12, 1n, true);
     bnd4.set(new TextEncoder().encode('GRACE\0\0\0'), 24);
-    bView.setBigUint64(44, 64n, true); // headers offset
+    bView.setBigUint64(44, 64n, true);
 
     expect(isFromSoftArchive(bnd4, 'c1000.chrbnd')).toBe(true);
     const parsedBnd4 = parseFromSoftArchive('c1000.chrbnd', bnd4, performance.now());
     expect(parsedBnd4.formatId).toBe('FROMSOFT');
     expect(parsedBnd4.formatName).toContain('BND4');
 
-    // 8b. DCX wrapping BND4
     const compressedBnd = zlibSync(bnd4);
     const dcx = new Uint8Array(0x48 + compressedBnd.length);
     dcx.set(new TextEncoder().encode('DCX\0'), 0);
@@ -198,25 +192,23 @@ describe('Universal Game Archive Parsers Suite', () => {
   });
 
   it('9. Parses Square Enix Sound (SDAT) & PFS Containers', () => {
-    // 9a. SDAT
+
     const sdat = new Uint8Array(256);
     sdat.set(new TextEncoder().encode('SDAT'), 0);
     const sView = new DataView(sdat.buffer);
-    sView.setUint16(4, 0xfeff, true); // BOM
-    sView.setUint16(6, 0x0100, true); // v1.0
+    sView.setUint16(4, 0xfeff, true);
+    sView.setUint16(6, 0x0100, true);
     sView.setUint32(8, 256, true);
     sView.setUint16(12, 0x40, true);
     sView.setUint16(14, 4, true);
 
-    // FAT at offset 0x40
-    sView.setUint32(32, 0x40, true); // FAT offset
-    sView.setUint32(36, 0x30, true); // FAT size
+    sView.setUint32(32, 0x40, true);
+    sView.setUint32(36, 0x30, true);
     sdat.set(new TextEncoder().encode('FAT '), 0x40);
-    sView.setUint32(0x48, 1, true); // 1 item
-    sView.setUint32(0x4C, 0x80, true); // item offset
-    sView.setUint32(0x50, 0x20, true); // item size
+    sView.setUint32(0x48, 1, true);
+    sView.setUint32(0x4C, 0x80, true);
+    sView.setUint32(0x50, 0x20, true);
 
-    // Audio payload at 0x80: SSEQ
     sdat.set(new TextEncoder().encode('SSEQ'), 0x80);
 
     expect(isSquareArchive(sdat, 'sound_data.sdat')).toBe(true);
@@ -227,7 +219,7 @@ describe('Universal Game Archive Parsers Suite', () => {
   });
 
   it('10. Main parseGameArchive universal dispatcher accurately dispatches to all engines', () => {
-    // Quake PAK
+
     const pak = new Uint8Array(64);
     pak.set(new TextEncoder().encode('PACK'), 0);
     new DataView(pak.buffer).setUint32(4, 12, true);
@@ -235,44 +227,37 @@ describe('Universal Game Archive Parsers Suite', () => {
     const parsedPak = parseGameArchive('pak0.pak', pak);
     expect(parsedPak.formatId).toBe('PAK');
 
-    // Bethesda BA2
     const ba2 = new Uint8Array(64);
     ba2.set(new TextEncoder().encode('BTDX'), 0);
     new DataView(ba2.buffer).setUint32(4, 1, true);
     const parsedBa2 = parseGameArchive('Starfield.ba2', ba2);
     expect(parsedBa2.formatId).toBe('BA2');
 
-    // Ubisoft FORGE
     const forge = new Uint8Array(64);
     forge.set(new TextEncoder().encode('scimitar\0'), 0);
     const parsedForge = parseGameArchive('PrinceOfPersia.forge', forge);
     expect(parsedForge.formatId).toBe('FORGE');
 
-    // Rockstar RPF
     const rpf = new Uint8Array(64);
     rpf.set(new TextEncoder().encode('RPF7'), 0);
     const parsedRpf = parseGameArchive('gta5.rpf', rpf);
     expect(parsedRpf.formatId).toBe('RPF');
 
-    // PlayStation PKG
     const pkg = new Uint8Array(64);
     pkg[0] = 0x7f; pkg[1] = 0x50; pkg[2] = 0x4b; pkg[3] = 0x47;
     const parsedPkg = parseGameArchive('patch.pkg', pkg);
     expect(parsedPkg.formatId).toBe('PKG');
 
-    // CRIWARE AWB
     const awb = new Uint8Array(64);
     awb.set(new TextEncoder().encode('AFS2'), 0);
     const parsedAwb = parseGameArchive('voice.awb', awb);
     expect(parsedAwb.formatId).toBe('CRIWARE');
 
-    // FromSoftware BND4
     const bnd = new Uint8Array(64);
     bnd.set(new TextEncoder().encode('BND4'), 0);
     const parsedBnd = parseGameArchive('item.bnd', bnd);
     expect(parsedBnd.formatId).toBe('FROMSOFT');
 
-    // Square Enix SDAT
     const sdat = new Uint8Array(64);
     sdat.set(new TextEncoder().encode('SDAT'), 0);
     const parsedSdat = parseGameArchive('sound.sdat', sdat);

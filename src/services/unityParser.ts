@@ -39,9 +39,6 @@ export const UNITY_TARGET_PLATFORMS: Record<number, string> = {
   42: 'Xbox Series X/S',
 };
 
-/**
- * Universal Unity Parser: Handles Unity SerializedFile (.assets) and UnityFS Bundle (.unity3d, .bundle)
- */
 export function parseUnityArchive(fileName: string, bytes: Uint8Array, startTime: number): ParsedArchive {
   const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
   const magic7 = readAscii(bytes, 0, 7);
@@ -56,17 +53,15 @@ export function parseUnityArchive(fileName: string, bytes: Uint8Array, startTime
   let engineFamily = 'Unity Engine';
 
   if (isBundle) {
-    // UnityFS / UnityWeb / UnityRaw Archive
-    const formatVersion = view.getUint32(8, false); // Big Endian
+
+    const formatVersion = view.getUint32(8, false);
     let pos = 12;
 
-    // Read engine version string (e.g. 2021.3.15f1)
     let endStr = pos;
     while (endStr < Math.min(bytes.length, pos + 32) && bytes[endStr] !== 0) endStr++;
     unityVersion = readAscii(bytes, pos, endStr - pos);
     pos = endStr + 1;
 
-    // Read revision string
     let endRev = pos;
     while (endRev < Math.min(bytes.length, pos + 32) && bytes[endRev] !== 0) endRev++;
     const revision = readAscii(bytes, pos, endRev - pos);
@@ -109,15 +104,14 @@ export function parseUnityArchive(fileName: string, bytes: Uint8Array, startTime
       }
     );
 
-    // Scan bundle payload for embedded SerializedFiles, text assets, shaders, and textures
     let entryIdx = 0;
     for (let i = pos; i < bytes.length - 8; i++) {
-      // Look for embedded TextAsset or text strings
+
       if (
-        (bytes[i] === 0x50 && bytes[i + 1] === 0x4e && bytes[i + 2] === 0x47) || // PNG
-        (bytes[i] === 0x44 && bytes[i + 1] === 0x44 && bytes[i + 2] === 0x53 && bytes[i + 3] === 0x20) || // DDS
-        (bytes[i] === 0x52 && bytes[i + 1] === 0x49 && bytes[i + 2] === 0x46 && bytes[i + 3] === 0x46) || // RIFF
-        (bytes[i] === 0x4f && bytes[i + 1] === 0x67 && bytes[i + 2] === 0x67 && bytes[i + 3] === 0x53) // Ogg
+        (bytes[i] === 0x50 && bytes[i + 1] === 0x4e && bytes[i + 2] === 0x47) ||
+        (bytes[i] === 0x44 && bytes[i + 1] === 0x44 && bytes[i + 2] === 0x53 && bytes[i + 3] === 0x20) ||
+        (bytes[i] === 0x52 && bytes[i + 1] === 0x49 && bytes[i + 2] === 0x46 && bytes[i + 3] === 0x46) ||
+        (bytes[i] === 0x4f && bytes[i + 1] === 0x67 && bytes[i + 2] === 0x67 && bytes[i + 3] === 0x53)
       ) {
         const slice = bytes.slice(i, Math.min(bytes.length, i + 65536));
         const cat = classifyEntry(`asset_${entryIdx}`, slice);
@@ -157,8 +151,7 @@ export function parseUnityArchive(fileName: string, bytes: Uint8Array, startTime
 
     engineFamily = `Unity Engine · ${unityVersion}`;
   } else {
-    // Unity SerializedFile (.assets / .sharedassets)
-    // Big Endian Header
+
     const metadataSize = view.getUint32(0, false);
     const fileSize = view.getUint32(4, false);
     const formatVersion = view.getUint32(8, false);
@@ -166,7 +159,6 @@ export function parseUnityArchive(fileName: string, bytes: Uint8Array, startTime
     const endiannessByte = bytes[16];
     const isBigEndian = endiannessByte !== 0;
 
-    // Version string usually at offset 20 or inside metadata
     let p = 20;
     if (formatVersion >= 7 && p < bytes.length) {
       let strEnd = p;
@@ -215,15 +207,12 @@ export function parseUnityArchive(fileName: string, bytes: Uint8Array, startTime
       }
     );
 
-    // Parse Object Table if within metadata
-    // In Unity assets, the object table follows type tree
     let objectCount = 0;
     const baseDataPos = Math.max(20, Math.min(bytes.length, dataOffset || 4096));
 
-    // Carve TextAssets, shaders, and textures from the data section
     let entryIdx = 0;
     for (let i = baseDataPos; i < bytes.length - 16; i++) {
-      // 1. TextAsset / Shader string (starts with length int32 followed by utf8 text)
+
       const potentialLen = view.getInt32(i, false);
       if (potentialLen > 10 && potentialLen < 262144 && i + 4 + potentialLen <= bytes.length) {
         let isText = true;
@@ -261,7 +250,6 @@ export function parseUnityArchive(fileName: string, bytes: Uint8Array, startTime
         }
       }
 
-      // 2. Texture2D PNG / DDS / WebP
       if (bytes[i] === 0x44 && bytes[i + 1] === 0x44 && bytes[i + 2] === 0x53 && bytes[i + 3] === 0x20) {
         const texView = new DataView(bytes.buffer, bytes.byteOffset + i, 32);
         const h = texView.getUint32(12, true);

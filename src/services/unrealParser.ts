@@ -2,8 +2,8 @@ import { inflateSync, unzlibSync } from 'fflate';
 import { ArchiveEntry, ArchiveHeaderField, ParsedArchive } from '../types/archive';
 import { computeCRC32, toHex, bytesToHexPreview, classifyEntry, readAscii, splitFolderAndName } from './archiveParser';
 
-export const UNREAL_PAK_MAGIC = 0x5a6f12e1; // 0xE1, 0x12, 0x6F, 0x5A
-export const UNREAL_PACKAGE_MAGIC = 0x9e2a83c1; // 0xC1, 0x83, 0x2A, 0x9E (.uasset / .umap)
+export const UNREAL_PAK_MAGIC = 0x5a6f12e1;
+export const UNREAL_PACKAGE_MAGIC = 0x9e2a83c1;
 
 export interface UnrealPakFooter {
   magic: number;
@@ -20,7 +20,6 @@ export function findUnrealPakFooter(bytes: Uint8Array): UnrealPakFooter | null {
   if (n < 44) return null;
   const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
 
-  // Check known footer offsets: n - 44 (UE4.0-4.2), n - 204 (UE4.3-4.21), or scan backwards up to 512 bytes
   const offsetsToCheck: number[] = [n - 44, n - 204, n - 221, n - 128, n - 64];
   for (let i = n - 4; i >= Math.max(0, n - 512); i--) {
     if (view.getUint32(i, true) === UNREAL_PAK_MAGIC) {
@@ -32,23 +31,17 @@ export function findUnrealPakFooter(bytes: Uint8Array): UnrealPakFooter | null {
   for (const magicPos of offsetsToCheck) {
     if (magicPos >= 0 && magicPos + 4 <= n) {
       if (view.getUint32(magicPos, true) === UNREAL_PAK_MAGIC) {
-        // In UE PAK, magic is at the END of the footer struct or followed by encryption flag
-        // Standard footer:
-        // offset: magicPos - 44 to magicPos + 4
-        // Let's inspect around magicPos
+
         let version = 8;
         let indexOffset = 0;
         let indexSize = 0;
 
-        // Pattern A: Magic at magicPos
-        // Before magic: indexOffset (int64), indexSize (int64), version (int32)
         if (magicPos >= 20) {
           version = view.getInt32(magicPos - 20, true);
           indexOffset = Number(view.getBigInt64(magicPos - 16, true));
           indexSize = Number(view.getBigInt64(magicPos - 8, true));
         }
 
-        // Pattern B: Magic at start of footer (magic + version + indexOffset + indexSize)
         if (indexOffset <= 0 || indexOffset >= n || indexSize <= 0) {
           if (magicPos + 24 <= n) {
             version = view.getInt32(magicPos + 4, true);
@@ -75,9 +68,6 @@ export function findUnrealPakFooter(bytes: Uint8Array): UnrealPakFooter | null {
   return null;
 }
 
-/**
- * Parse Unreal Engine 4/5 .pak Archive or .uasset/.umap Package
- */
 export function parseUnrealArchive(fileName: string, bytes: Uint8Array, startTime: number): ParsedArchive {
   const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
   const isUAsset = bytes.length >= 4 && view.getUint32(0, true) === UNREAL_PACKAGE_MAGIC;
@@ -87,7 +77,7 @@ export function parseUnrealArchive(fileName: string, bytes: Uint8Array, startTim
   const headerFields: ArchiveHeaderField[] = [];
 
   if (isUAsset) {
-    // Unreal Engine Asset Package (.uasset / .umap)
+
     const legacyVer = view.getInt32(4, true);
     const ue3Ver = view.getInt32(8, true);
     const fileVer = view.getInt32(12, true);
@@ -113,7 +103,6 @@ export function parseUnrealArchive(fileName: string, bytes: Uint8Array, startTim
     const importCount = view.getInt32(pos, true);
     const importOffset = view.getInt32(pos + 4, true);
 
-    // Read Name Table strings
     const nameStrings: string[] = [];
     if (nameOffset > 0 && nameOffset < bytes.length && nameCount > 0 && nameCount < 10000) {
       let np = nameOffset;
@@ -123,7 +112,7 @@ export function parseUnrealArchive(fileName: string, bytes: Uint8Array, startTim
         if (len > 0 && len < 256 && np + len <= bytes.length) {
           const str = readAscii(bytes, np, len).replace(/\0/g, '');
           nameStrings.push(str);
-          np += len + 4; // length + string + non-case hash
+          np += len + 4;
         } else {
           break;
         }
@@ -161,7 +150,6 @@ export function parseUnrealArchive(fileName: string, bytes: Uint8Array, startTim
       }
     );
 
-    // Format decoded Name Table as an inspector text file
     if (nameStrings.length > 0) {
       const nameTableContent = [
         `// Unreal Engine Asset Package: ${fileName}`,
@@ -190,7 +178,6 @@ export function parseUnrealArchive(fileName: string, bytes: Uint8Array, startTim
       });
     }
 
-    // Include raw package payload
     entries.push({
       id: 'ue-asset-raw',
       name: fileName,
@@ -222,7 +209,6 @@ export function parseUnrealArchive(fileName: string, bytes: Uint8Array, startTim
     };
   }
 
-  // Unreal Engine .pak Archive
   const footer = findUnrealPakFooter(bytes);
 
   headerFields.push({
@@ -258,25 +244,22 @@ export function parseUnrealArchive(fileName: string, bytes: Uint8Array, startTim
       }
     );
 
-    // Try reading index table
     try {
       const idxStart = footer.indexOffset;
       const idxEnd = Math.min(bytes.length, idxStart + footer.indexSize);
       let idxBytes = bytes.subarray(idxStart, idxEnd);
 
-      // Check if index is Zlib compressed
       if (idxBytes[0] === 0x78 && (idxBytes[1] === 0x9c || idxBytes[1] === 0xda)) {
         try {
           idxBytes = unzlibSync(idxBytes);
         } catch {
-          // Keep raw
+
         }
       }
 
       const idxView = new DataView(idxBytes.buffer, idxBytes.byteOffset, idxBytes.byteLength);
       let ip = 0;
 
-      // Mount point string
       const mountLen = idxView.getInt32(ip, true);
       ip += 4;
       let mountPoint = '../../../';
@@ -306,9 +289,8 @@ export function parseUnrealArchive(fileName: string, bytes: Uint8Array, startTim
           ip += 8;
           const compMethod = idxView.getUint32(ip, true);
           ip += 4;
-          ip += 20; // SHA1 hash (20 bytes)
+          ip += 20;
 
-          // Extra flags / block list if version >= 3
           let isEncrypted = false;
           if (footer.version >= 3 && ip + 1 <= idxBytes.length) {
             isEncrypted = idxView.getUint8(ip) !== 0;
@@ -324,14 +306,13 @@ export function parseUnrealArchive(fileName: string, bytes: Uint8Array, startTim
           const safeEnd = Math.max(safeStart, Math.min(bytes.length, fileOffset + fileSize));
           let fileData = bytes.slice(safeStart, safeEnd);
 
-          // If compressed with standard Zlib
           let methodStr = compMethod === 0 ? 'Stored' : compMethod === 1 ? 'Zlib' : 'Oodle / LZ4';
           if (compMethod === 1 && fileData.length > 0) {
             try {
               fileData = unzlibSync(fileData);
               methodStr = 'Zlib (Decompressed)';
             } catch {
-              // Keep raw
+
             }
           }
 
@@ -355,11 +336,10 @@ export function parseUnrealArchive(fileName: string, bytes: Uint8Array, startTim
     }
   }
 
-  // Fallback: If no entries extracted from index table, carve embedded .uasset, .umap, .bik, textures
   if (entries.length === 0) {
     let carvedIdx = 0;
     for (let i = 0; i < bytes.length - 8; i++) {
-      // Look for .uasset signature 0x9E2A83C1
+
       if (view.getUint32(i, true) === UNREAL_PACKAGE_MAGIC) {
         const slice = bytes.slice(i, Math.min(bytes.length, i + 131072));
         entries.push({

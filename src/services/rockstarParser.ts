@@ -5,7 +5,7 @@ import { computeCRC32, classifyEntry, formatBytes, toHex } from './archiveParser
 export function isRockstarRage(bytes: Uint8Array, fileName: string): boolean {
   if (fileName.toLowerCase().endsWith('.rpf')) return true;
   if (bytes.length < 16) return false;
-  // "RPF0", "RPF2", "RPF3", "RPF4", "RPF6", "RPF7"
+
   if (
     bytes[0] === 0x52 &&
     bytes[1] === 0x50 &&
@@ -43,7 +43,6 @@ export function parseRockstarRage(fileName: string, bytes: Uint8Array, startTime
     { label: 'Encryption Mode', offset: '0x0C', length: 4, value: encName, description: 'Payload cryptographic status' },
   ];
 
-  // String table sits immediately after the entry records
   const tocEntriesOffset = 16;
   const namesOffset = tocEntriesOffset + entryCount * 16;
 
@@ -65,7 +64,7 @@ export function parseRockstarRage(fileName: string, bytes: Uint8Array, startTime
     const nameOffset = view.getUint16(p, true);
     const isDirectory = (view.getUint8(p + 3) & 0x80) !== 0;
 
-    if (isDirectory) continue; // Skip virtual directory TOC entries
+    if (isDirectory) continue;
 
     const fileOffset = (view.getUint32(p + 4, true) & 0x7FFFFFFF) * 512;
     const fileSize = view.getUint32(p + 8, true);

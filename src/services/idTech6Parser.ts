@@ -2,8 +2,8 @@ import { unzlibSync, inflateSync } from 'fflate';
 import { ArchiveEntry, ArchiveHeaderField, ParsedArchive } from '../types/archive';
 import { computeCRC32, toHex, bytesToHexPreview, classifyEntry, readAscii, splitFolderAndName } from './archiveParser';
 
-export const IDTECH6_RES_MAGIC = 0x52455300; // 'RES\0'
-export const IDTECH6_BMODEL_MAGIC = 0x424d4c1b; // 1B 4C 4D 42 ('\x1bLMB')
+export const IDTECH6_RES_MAGIC = 0x52455300;
+export const IDTECH6_BMODEL_MAGIC = 0x424d4c1b;
 
 export interface BmodelMeshInfo {
   materialName: string;
@@ -15,7 +15,6 @@ export function parseBmodelInfo(bytes: Uint8Array): { meshes: BmodelMeshInfo[]; 
   if (bytes.length < 16) return null;
   const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
 
-  // Check magic 1B 4C 4D 42
   if (bytes[0] !== 0x1b || bytes[1] !== 0x4c || bytes[2] !== 0x4d || bytes[3] !== 0x42) {
     return null;
   }
@@ -32,7 +31,7 @@ export function parseBmodelInfo(bytes: Uint8Array): { meshes: BmodelMeshInfo[]; 
       matName = readAscii(bytes, p, matLen).replace(/\0/g, '');
       p += matLen;
     }
-    const vertCount = p + 4 <= bytes.length ? view.getInt32(p, false) : 0; // big-endian in bmodel
+    const vertCount = p + 4 <= bytes.length ? view.getInt32(p, false) : 0;
     p += 4;
     const faceCount = p + 4 <= bytes.length ? view.getInt32(p, false) : 0;
     p += 4;
@@ -50,17 +49,12 @@ export function parseBmodelInfo(bytes: Uint8Array): { meshes: BmodelMeshInfo[]; 
   };
 }
 
-/**
- * Universal id Tech 6 (.resource / .index / .patch / .bmodel) parser
- * Exact open-source logic from emoose/DOOMExtract
- */
 export function parseIdTech6Archive(fileName: string, bytes: Uint8Array, startTime: number): ParsedArchive {
   const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
   const warnings: string[] = [];
   const entries: ArchiveEntry[] = [];
   const headerFields: ArchiveHeaderField[] = [];
 
-  // Check if .bmodel file
   if (bytes.length >= 4 && bytes[0] === 0x1b && bytes[1] === 0x4c && bytes[2] === 0x4d && bytes[3] === 0x42) {
     const bmodel = parseBmodelInfo(bytes);
 
@@ -81,7 +75,6 @@ export function parseIdTech6Archive(fileName: string, bytes: Uint8Array, startTi
       }
     );
 
-    // Create summary text of model geometry
     const modelReport = [
       `// id Tech 6 Binary Model (.bmodel): ${fileName}`,
       `// Engine: DOOM (2016) / id Tech 6`,
@@ -141,11 +134,9 @@ export function parseIdTech6Archive(fileName: string, bytes: Uint8Array, startTi
     };
   }
 
-  // Parse .index or .resource container
-  // Magic check: (magic & 0xFFFFFF00) === 0x52455300 or byte 1..3 === 'SER'
   const isResHeader =
-    (bytes[1] === 0x53 && bytes[2] === 0x45 && bytes[3] === 0x52) || // 'SER'
-    (bytes[0] === 0x52 && bytes[1] === 0x45 && bytes[2] === 0x53); // 'RES'
+    (bytes[1] === 0x53 && bytes[2] === 0x45 && bytes[3] === 0x52) ||
+    (bytes[0] === 0x52 && bytes[1] === 0x45 && bytes[2] === 0x53);
 
   let headerVersion = bytes[0];
   if (bytes[0] === 0x52 && bytes[1] === 0x45 && bytes[2] === 0x53) {
@@ -186,15 +177,13 @@ export function parseIdTech6Archive(fileName: string, bytes: Uint8Array, startTi
     }
   );
 
-  // Read DOOMResourceEntry items
   if (numEntries > 0 && numEntries < 100000 && pos < bytes.length) {
     let entryIdx = 0;
     for (let i = 0; i < numEntries && pos < bytes.length - 24; i++) {
       try {
-        const id = view.getInt32(pos, false); // Big Endian
+        const id = view.getInt32(pos, false);
         pos += 4;
 
-        // FileType string (LE)
         const typeLen = view.getInt32(pos, true);
         pos += 4;
         let fileType = '';
@@ -203,7 +192,6 @@ export function parseIdTech6Archive(fileName: string, bytes: Uint8Array, startTi
           pos += typeLen;
         }
 
-        // FileName2 string (LE)
         const name2Len = view.getInt32(pos, true);
         pos += 4;
         let fileName2 = '';
@@ -212,7 +200,6 @@ export function parseIdTech6Archive(fileName: string, bytes: Uint8Array, startTi
           pos += name2Len;
         }
 
-        // FileName3 string (LE) - full path
         const name3Len = view.getInt32(pos, true);
         pos += 4;
         let fileName3 = '';
@@ -223,14 +210,13 @@ export function parseIdTech6Archive(fileName: string, bytes: Uint8Array, startTi
 
         if (pos + 16 > bytes.length) break;
 
-        const offset = Number(view.getBigInt64(pos, false)); // Big Endian
+        const offset = Number(view.getBigInt64(pos, false));
         pos += 8;
         const size = view.getInt32(pos, false);
         pos += 4;
         const compressedSize = view.getInt32(pos, false);
         pos += 4;
 
-        // Zero field: 8 bytes if ver <= 4, 4 bytes if ver >= 5
         const zeroLen = headerVersion <= 4 ? 8 : 4;
         pos += zeroLen;
 
@@ -240,7 +226,6 @@ export function parseIdTech6Archive(fileName: string, bytes: Uint8Array, startTi
         const rawPath = (fileName3 || fileName2 || fileType || `res_file_${id}`).replace(/\\/g, '/');
         const { folder, name, cleanPath } = splitFolderAndName(rawPath);
 
-        // Fetch or decompress payload if offset is within current file
         let fileData = new Uint8Array(0);
         let methodStr = size === compressedSize ? 'Stored' : 'Zlib Compressed';
 
@@ -289,7 +274,6 @@ export function parseIdTech6Archive(fileName: string, bytes: Uint8Array, startTi
     }
   }
 
-  // Fallback: If no structured entries, carve .bmodel, .decl, textures, zlib streams
   if (entries.length === 0) {
     let carvedIdx = 0;
     for (let i = 0; i < bytes.length - 8; i++) {

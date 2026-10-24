@@ -9,11 +9,6 @@ import {
   toHex,
 } from './archiveParser';
 
-/**
- * Xbox One, Xbox Series X|S, Windows GDK PC, and UWP Package Parser
- * Supports: .appx, .appxbundle, .msix, .msixbundle, .xvd, .xvc, .eappx, .emsix, .appxupload, MicrosoftGame.config
- */
-
 export interface GdkGameConfigInfo {
   titleId?: string;
   storeId?: string;
@@ -39,9 +34,6 @@ export interface AppxManifestInfo {
   entryPoint?: string;
 }
 
-/**
- * Basic XML tag and attribute extractor for AppxManifest.xml and MicrosoftGame.config
- */
 function extractXmlAttribute(xml: string, tag: string, attr: string): string | undefined {
   const tagRegex = new RegExp(`<${tag}[^>]*>`, 'i');
   const tagMatch = xml.match(tagRegex);
@@ -80,7 +72,6 @@ export function parseMicrosoftGameConfig(xml: string): GdkGameConfigInfo {
     extractXmlAttribute(xml, 'ShellVisuals', 'Description') ||
     extractXmlTagContent(xml, 'Description');
 
-  // Extract executables
   const executables: string[] = [];
   const exeRegex = /<Executable[^>]+Name\s*=\s*["']([^"']+)["']/gi;
   let match: RegExpExecArray | null;
@@ -136,9 +127,6 @@ export function parseAppxManifestXml(xml: string): AppxManifestInfo {
   };
 }
 
-/**
- * Parses Xbox One / Series XVD (Xbox Virtual Disk) container (.xvd / .xvc)
- */
 export function parseXboxXvdContainer(
   fileName: string,
   bytes: Uint8Array,
@@ -148,7 +136,6 @@ export function parseXboxXvdContainer(
   const warnings: string[] = [];
   const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
 
-  // XVD magic is "msft" (0x6D 0x73 0x66 0x74) at 0x00 or 0x200
   let magicOffset = 0;
   if (readAscii(bytes, 0, 4) === 'msft') {
     magicOffset = 0;
@@ -164,7 +151,6 @@ export function parseXboxXvdContainer(
     description: 'Xbox One & Xbox Series XVD/XVC package container header',
   });
 
-  // Extract container metadata (GUID, Volume Size, Sector Size)
   const isXvc = fileName.toLowerCase().endsWith('.xvc');
   let volumeSize = bytes.length;
   if (bytes.length >= magicOffset + 0x28) {
@@ -201,7 +187,6 @@ export function parseXboxXvdContainer(
   const entries: ArchiveEntry[] = [];
   const enc = new TextEncoder();
 
-  // Create virtual descriptor entry
   const xvdInfo = `Xbox Virtual Disk (XVD/XVC) Container\n======================================\nFile Name: ${fileName}\nFormat: ${isXvc ? 'XVC (Xbox Virtual Container)' : 'XVD (Xbox Virtual Disk)'}\nMagic: msft (offset 0x${toHex(magicOffset, 4)})\nFile Size: ${bytes.length} bytes\nSector Size: 4096 bytes\nTarget Ecosystem: Microsoft Xbox One / Xbox Series X|S / Microsoft GDK\n`;
   const infoBytes = enc.encode(xvdInfo);
 
@@ -239,9 +224,6 @@ export function parseXboxXvdContainer(
   };
 }
 
-/**
- * Universal Parser for Xbox One, Xbox Series, GDK PC, and UWP packages (.appx, .msix, .appxbundle, .msixbundle)
- */
 export function parseXboxGdkAppxArchive(
   fileName: string,
   bytes: Uint8Array,
@@ -272,7 +254,6 @@ export function parseXboxGdkAppxArchive(
     description: 'Open Packaging Conventions (OPC / ECMA-376) Deflate ZIP container',
   });
 
-  // Unzip container
   let unzippedFiles: Record<string, Uint8Array> = {};
   try {
     unzippedFiles = unzipSync(bytes);
@@ -284,7 +265,6 @@ export function parseXboxGdkAppxArchive(
   let gameConfig: GdkGameConfigInfo | null = null;
   let appxManifest: AppxManifestInfo | null = null;
 
-  // Search for MicrosoftGame.config (GDK) and AppxManifest.xml (UWP/GDK)
   for (const [path, fileData] of Object.entries(unzippedFiles)) {
     const cleanPath = path.replace(/\\/g, '/');
     if (cleanPath.toLowerCase().endsWith('microsoftgame.config')) {
@@ -292,7 +272,7 @@ export function parseXboxGdkAppxArchive(
         const xmlText = dec.decode(fileData);
         gameConfig = parseMicrosoftGameConfig(xmlText);
       } catch {
-        // ignore xml decode error
+
       }
     }
     if (cleanPath.toLowerCase().endsWith('appxmanifest.xml')) {
@@ -300,12 +280,11 @@ export function parseXboxGdkAppxArchive(
         const xmlText = dec.decode(fileData);
         appxManifest = parseAppxManifestXml(xmlText);
       } catch {
-        // ignore xml decode error
+
       }
     }
   }
 
-  // Populate Header Fields with Game and Package Metadata
   if (gameConfig) {
     if (gameConfig.displayName) {
       headerFields.push({
@@ -384,20 +363,18 @@ export function parseXboxGdkAppxArchive(
     }
   }
 
-  // Convert files into ArchiveEntry array
   const entries: ArchiveEntry[] = [];
   let fileIndex = 0;
 
   for (const [rawPath, fileBytes] of Object.entries(unzippedFiles)) {
     const path = rawPath.replace(/\\/g, '/').replace(/^\/+/, '');
     if (path.endsWith('/') || fileBytes.length === 0 && path.endsWith('/')) {
-      continue; // Skip directory records
+      continue;
     }
 
     const { folder, name: cleanName } = splitFolderAndName(path);
     const lowerName = cleanName.toLowerCase();
 
-    // Check specific GDK/UWP asset categories
     let category = classifyEntry(cleanName, fileBytes);
     if (lowerName.endsWith('.appx') || lowerName.endsWith('.msix')) {
       category = 'package';
@@ -430,7 +407,6 @@ export function parseXboxGdkAppxArchive(
     });
   }
 
-  // If bundle, note in summary
   if (isBundle) {
     const subPackages = entries.filter((e) => e.metadata?.isBundledPackage);
     headerFields.push({

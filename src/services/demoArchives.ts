@@ -11,10 +11,6 @@ export interface SampleArchivePreset {
   sourceUrl: string;
 }
 
-/**
- * Authentic, Open-Source Game Archive Presets for Tool Demo.
- * All files are verified genuine binaries downloaded from open-source repositories.
- */
 export const SAMPLE_ARCHIVES: SampleArchivePreset[] = [
   {
     id: 'wad-freedoom',
@@ -122,9 +118,6 @@ export const SAMPLE_ARCHIVES: SampleArchivePreset[] = [
   },
 ];
 
-/**
- * Fetches the binary Uint8Array of an authentic sample preset with multi-path resolution
- */
 export async function fetchPresetBinary(preset: SampleArchivePreset): Promise<Uint8Array> {
   const clean = preset.url.replace(/^\/+/, '');
   const candidateUrls = [
